@@ -32,6 +32,7 @@
             --accent-green-dim: #2e7d32;
             --accent-orange: #ffa726;
             --accent-cyan: #26c6da;
+            --accent-teal: #26a69a;
             --success: #4caf50;
             --warning: #ff9800;
             --danger: #f44336;
@@ -158,6 +159,11 @@
             background: var(--border-color);
         }
 
+        .btn-small {
+            padding: 0.35rem 0.75rem;
+            font-size: 0.75rem;
+        }
+
         /* Converter */
         .converter-inline {
             display: flex;
@@ -192,13 +198,170 @@
             color: var(--text-muted);
         }
 
+        /* Project Info */
+        .project-info {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .project-info label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .project-info input {
+            flex: 1;
+            min-width: 250px;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--bg-input);
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .project-info input:focus {
+            outline: none;
+            border-color: var(--accent-orange);
+        }
+
+        /* Collapsible Panels */
+        .panel-toggle {
+            width: 100%;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            margin-bottom: 0;
+        }
+
+        .panel-toggle:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .panel-toggle .arrow {
+            transition: transform 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .panel-toggle.open {
+            border-radius: 8px 8px 0 0;
+        }
+
+        .panel-toggle.open .arrow {
+            transform: rotate(180deg);
+        }
+
+        .panel-content {
+            display: none;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            padding: 1.25rem;
+        }
+
+        .panel-content.open {
+            display: block;
+        }
+
+        .panel-wrapper {
+            margin-bottom: 1rem;
+        }
+
+        /* Rate Configuration Grid */
+        .rate-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .rate-section {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .rate-section h4 {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .rate-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .rate-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .rate-row label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .rate-row input {
+            width: 100px;
+            padding: 0.4rem 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--bg-input);
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            text-align: right;
+        }
+
+        .rate-row input:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+        }
+
+        .rate-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+            justify-content: flex-end;
+        }
+
         /* Settings Panel */
         .settings-panel {
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 1rem;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
         }
 
         .settings-row {
@@ -260,13 +423,19 @@
             margin-bottom: 1.5rem;
         }
 
-        @media (max-width: 1200px) {
+        @media (max-width: 1400px) {
             .main-grid {
                 grid-template-columns: repeat(3, 1fr);
             }
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 900px) {
+            .main-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
             .main-grid {
                 grid-template-columns: 1fr;
             }
@@ -300,13 +469,14 @@
         .section-header.pink { background: rgba(240, 98, 146, 0.1); border-color: var(--accent-pink); color: var(--accent-pink); }
         .section-header.blue { background: rgba(66, 165, 245, 0.1); border-color: var(--accent-blue); color: var(--accent-blue); }
         .section-header.green { background: rgba(102, 187, 106, 0.1); border-color: var(--accent-green); color: var(--accent-green); }
+        .section-header.teal { background: rgba(38, 166, 154, 0.1); border-color: var(--accent-teal); color: var(--accent-teal); }
 
         .section-body {
             padding: 1rem;
         }
 
         .input-group {
-            margin-bottom: 0.875rem;
+            margin-bottom: 0.75rem;
         }
 
         .input-group:last-child {
@@ -315,28 +485,30 @@
 
         .input-group label {
             display: block;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 600;
             color: var(--text-secondary);
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.2rem;
+            text-transform: uppercase;
         }
 
         .input-group .hint {
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             color: var(--text-muted);
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.2rem;
             font-style: italic;
+            text-transform: none;
         }
 
         .input-group input,
         .input-group select {
             width: 100%;
-            padding: 0.5rem 0.75rem;
+            padding: 0.45rem 0.6rem;
             border: 1px solid var(--border-color);
             border-radius: 4px;
             background: var(--bg-input);
             color: var(--text-primary);
-            font-size: 0.875rem;
+            font-size: 0.8rem;
             font-family: 'JetBrains Mono', monospace;
             transition: border-color 0.2s ease;
         }
@@ -352,18 +524,46 @@
             color: var(--text-muted);
         }
 
+        .input-row {
+            display: flex;
+            gap: 0.5rem;
+            align-items: flex-end;
+        }
+
+        .input-row .input-group {
+            flex: 1;
+        }
+
+        .mob-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+            border-top: 1px dashed var(--border-color);
+        }
+
+        .mob-checkbox input {
+            width: 14px;
+            height: 14px;
+            accent-color: var(--accent-orange);
+        }
+
+        .mob-checkbox label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
         /* Output Section */
         .output-card {
             background: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            overflow: hidden;
+            border-top: 1px solid var(--border-color);
         }
 
         .output-header {
-            padding: 0.5rem 1rem;
+            padding: 0.4rem 1rem;
             font-weight: 700;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             background: var(--bg-secondary);
@@ -371,15 +571,15 @@
         }
 
         .output-body {
-            padding: 0.75rem 1rem;
+            padding: 0.6rem 1rem;
         }
 
         .output-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0.25rem 0;
-            font-size: 0.8rem;
+            padding: 0.15rem 0;
+            font-size: 0.75rem;
         }
 
         .output-row .label {
@@ -394,7 +594,72 @@
 
         .output-row.highlight .value {
             color: var(--accent-cyan);
-            font-size: 0.9rem;
+        }
+
+        .output-row.cost .value {
+            color: var(--accent-green);
+        }
+
+        .output-divider {
+            border-top: 1px dashed var(--border-color);
+            margin: 0.35rem 0;
+        }
+
+        /* Tack Coat Section */
+        .tack-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .tack-section h3 {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--accent-teal);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--accent-teal);
+        }
+
+        .tack-grid {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .tack-grid .input-group {
+            margin-bottom: 0;
+        }
+
+        .tack-output {
+            display: flex;
+            gap: 2rem;
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .tack-output .stat {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tack-output .stat-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .tack-output .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-primary);
         }
 
         /* Summary Section */
@@ -425,73 +690,187 @@
 
         .summary-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 1rem;
+            margin-bottom: 1rem;
         }
 
         .summary-stat {
             background: var(--bg-primary);
-            padding: 1rem;
+            padding: 0.75rem;
             border-radius: 8px;
             border: 1px solid var(--border-color);
         }
 
         .summary-stat .label {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: var(--text-muted);
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.15rem;
         }
 
         .summary-stat .value {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             font-weight: 700;
             color: var(--text-primary);
         }
 
         .summary-stat .unit {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: var(--text-secondary);
-            margin-left: 0.25rem;
+            margin-left: 0.2rem;
         }
 
-        .summary-stat.warning .value { color: var(--warning); }
-        .summary-stat.success .value { color: var(--success); }
+        /* Cost Summary */
+        .cost-summary {
+            background: var(--bg-secondary);
+            border: 2px solid var(--accent-green);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .cost-summary h2 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--accent-green);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .cost-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .cost-category {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .cost-category h4 {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .cost-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.3rem 0;
+            font-size: 0.8rem;
+        }
+
+        .cost-line .label {
+            color: var(--text-secondary);
+        }
+
+        .cost-line .value {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .cost-line.subtotal {
+            border-top: 1px solid var(--border-color);
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+        }
+
+        .cost-line.subtotal .label,
+        .cost-line.subtotal .value {
+            font-weight: 700;
+            color: var(--accent-cyan);
+        }
+
+        .cost-totals {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 2px solid var(--border-color);
+        }
+
+        .cost-total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+        }
+
+        .cost-total-row .label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .cost-total-row .value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .cost-total-row.grand {
+            background: var(--bg-tertiary);
+            margin: 0.5rem -1rem;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+        }
+
+        .cost-total-row.grand .label {
+            color: var(--accent-green);
+            font-size: 1rem;
+        }
+
+        .cost-total-row.grand .value {
+            font-size: 1.4rem;
+            color: var(--accent-green);
+        }
+
+        .markup-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.5rem 0;
+        }
+
+        .markup-row label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .markup-row input {
+            width: 80px;
+            padding: 0.4rem 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--bg-input);
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            text-align: right;
+        }
+
+        .markup-row input:focus {
+            outline: none;
+            border-color: var(--accent-green);
+        }
 
         /* Reference Section */
         .reference-section {
             margin-top: 2rem;
-        }
-
-        .reference-toggle {
-            width: 100%;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 1rem 1.25rem;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            color: var(--text-primary);
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: all 0.2s ease;
-        }
-
-        .reference-toggle:hover {
-            background: var(--bg-tertiary);
-        }
-
-        .reference-toggle .arrow {
-            transition: transform 0.3s ease;
-            font-size: 1.25rem;
-        }
-
-        .reference-toggle.open .arrow {
-            transform: rotate(180deg);
         }
 
         .reference-content {
@@ -510,11 +889,11 @@
 
         .reference-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 1.5rem;
         }
 
-        @media (max-width: 900px) {
+        @media (max-width: 800px) {
             .reference-grid {
                 grid-template-columns: 1fr;
             }
@@ -661,29 +1040,159 @@
             </div>
         </header>
 
+        <!-- Project Name -->
+        <div class="project-info">
+            <label>Project Name</label>
+            <input type="text" id="projectName" placeholder="Enter project name...">
+        </div>
+
+        <!-- Rate Configuration Panel -->
+        <div class="panel-wrapper">
+            <button class="panel-toggle" onclick="togglePanel(this, 'rateContent')">
+                <span>💰 Rate Configuration (Materials, Labor, Equipment, Trucking, Mobilization)</span>
+                <span class="arrow">▼</span>
+            </button>
+            <div class="panel-content" id="rateContent">
+                <div class="rate-grid">
+                    <!-- Materials -->
+                    <div class="rate-section">
+                        <h4>Materials</h4>
+                        <div class="rate-row">
+                            <label>9.5mm HMA ($/ton)</label>
+                            <input type="number" id="rate95HMA" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="rate-row">
+                            <label>19mm HMA ($/ton)</label>
+                            <input type="number" id="rate19HMA" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="rate-row">
+                            <label>DGA ($/ton)</label>
+                            <input type="number" id="rateDGA" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="rate-row">
+                            <label>Tack Coat ($/gal)</label>
+                            <input type="number" id="rateTack" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="rate-row">
+                            <label>Tack Rate (gal/SY)</label>
+                            <input type="number" id="tackAppRate" placeholder="0.05" step="0.01" value="0.05">
+                        </div>
+                    </div>
+
+                    <!-- Index Notation -->
+                    <div class="rate-section">
+                        <h4>Price Index Reference</h4>
+                        <div class="rate-row">
+                            <label>Fuel Price Index</label>
+                            <input type="text" id="fuelIndex" placeholder="e.g., $3.45">
+                        </div>
+                        <div class="rate-row">
+                            <label>AC Price Index</label>
+                            <input type="text" id="acIndex" placeholder="e.g., $559">
+                        </div>
+                        <p style="font-size: 0.65rem; color: var(--text-muted); margin-top: 0.5rem; font-style: italic;">
+                            For reference on export. Adjust material prices to match expected construction-time indexes.
+                        </p>
+                    </div>
+
+                    <!-- Trucking -->
+                    <div class="rate-section">
+                        <h4>Trucking</h4>
+                        <div class="rate-row">
+                            <label>Trucking Rate ($/hr)</label>
+                            <input type="number" id="rateTrucking" placeholder="0.00" step="0.01">
+                        </div>
+                    </div>
+
+                    <!-- Crew & Equipment Rates -->
+                    <div class="rate-section">
+                        <h4>Crew & Equipment ($/hr)</h4>
+                        <div class="rate-row">
+                            <label>Excavation Crew</label>
+                            <input type="number" id="rateCrewExc" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="rate-row">
+                            <label>Fine Grading Crew</label>
+                            <input type="number" id="rateCrewFG" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="rate-row">
+                            <label>DGA Crew</label>
+                            <input type="number" id="rateCrewDGA" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="rate-row">
+                            <label>Milling Crew</label>
+                            <input type="number" id="rateCrewMill" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="rate-row">
+                            <label>Base Paving Crew</label>
+                            <input type="number" id="rateCrewBase" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="rate-row">
+                            <label>Surface Paving Crew</label>
+                            <input type="number" id="rateCrewSurf" placeholder="0.00" step="0.01">
+                        </div>
+                    </div>
+
+                    <!-- Mobilization -->
+                    <div class="rate-section">
+                        <h4>Mobilization ($)</h4>
+                        <div class="rate-row">
+                            <label>Excavation Mob</label>
+                            <input type="number" id="mobExc" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="rate-row">
+                            <label>Fine Grading Mob</label>
+                            <input type="number" id="mobFG" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="rate-row">
+                            <label>DGA Mob</label>
+                            <input type="number" id="mobDGA" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="rate-row">
+                            <label>Milling Mob</label>
+                            <input type="number" id="mobMill" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="rate-row">
+                            <label>Base Paving Mob</label>
+                            <input type="number" id="mobBase" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="rate-row">
+                            <label>Surface Paving Mob</label>
+                            <input type="number" id="mobSurf" placeholder="0.00" step="0.01">
+                        </div>
+                    </div>
+                </div>
+                <div class="rate-actions">
+                    <button class="btn btn-success btn-small" onclick="saveRates()">💾 Save Rates</button>
+                    <button class="btn btn-secondary btn-small" onclick="loadRates()">📂 Load Rates</button>
+                    <button class="btn btn-danger btn-small" onclick="clearSavedRates()">🗑️ Clear Saved</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Global Settings -->
         <div class="settings-panel">
             <div class="settings-row">
                 <div class="setting-group">
                     <label>Project Complexity</label>
-                    <select id="complexityModifier" onchange="if(document.getElementById('autoCalc').checked) calculateAll()">
-                        <option value="0.85">Simple (0.85×) - Large retail, open access</option>
-                        <option value="0.70" selected>Standard (0.70×) - Typical commercial</option>
-                        <option value="0.55">Complex (0.55×) - Dense obstacles, tight spaces</option>
-                        <option value="1.00">Roadway (1.0×) - DOT standard rates</option>
+                    <select id="complexityModifier" onchange="autoCalcCheck()">
+                        <option value="0.85">Simple (0.85×)</option>
+                        <option value="0.70" selected>Standard (0.70×)</option>
+                        <option value="0.55">Complex (0.55×)</option>
+                        <option value="1.00">Roadway (1.0×)</option>
                     </select>
                 </div>
                 <div class="setting-group">
-                    <label>Asphalt Waste Factor</label>
-                    <select id="asphaltWaste" onchange="if(document.getElementById('autoCalc').checked) calculateAll()">
-                        <option value="1.05">5% - Typical</option>
-                        <option value="1.07" selected>7% - Standard</option>
-                        <option value="1.10">10% - Complex</option>
+                    <label>Asphalt Waste</label>
+                    <select id="asphaltWaste" onchange="autoCalcCheck()">
+                        <option value="1.05">5%</option>
+                        <option value="1.07" selected>7%</option>
+                        <option value="1.10">10%</option>
                     </select>
                 </div>
                 <div class="setting-group">
-                    <label>Aggregate Waste Factor</label>
-                    <select id="aggregateWaste" onchange="if(document.getElementById('autoCalc').checked) calculateAll()">
+                    <label>Aggregate Waste</label>
+                    <select id="aggregateWaste" onchange="autoCalcCheck()">
                         <option value="1.05">5%</option>
                         <option value="1.07" selected>7%</option>
                         <option value="1.10">10%</option>
@@ -691,18 +1200,18 @@
                 </div>
                 <div class="setting-group">
                     <label>Excavation Swell</label>
-                    <select id="swellFactor" onchange="if(document.getElementById('autoCalc').checked) calculateAll()">
-                        <option value="1.15">15% - Sandy</option>
-                        <option value="1.25" selected>25% - Typical</option>
-                        <option value="1.35">35% - Clay</option>
+                    <select id="swellFactor" onchange="autoCalcCheck()">
+                        <option value="1.15">15%</option>
+                        <option value="1.25" selected>25%</option>
+                        <option value="1.35">35%</option>
                     </select>
                 </div>
                 <div class="setting-group">
                     <label>Trucking Efficiency</label>
-                    <select id="truckingEfficiency" onchange="if(document.getElementById('autoCalc').checked) calculateAll()">
-                        <option value="1.00">100% - Ideal</option>
-                        <option value="0.90" selected>90% - Standard</option>
-                        <option value="0.85">85% - Constrained</option>
+                    <select id="truckingEfficiency" onchange="autoCalcCheck()">
+                        <option value="1.00">100%</option>
+                        <option value="0.90" selected>90%</option>
+                        <option value="0.85">85%</option>
                     </select>
                 </div>
                 <div class="checkbox-group">
@@ -723,28 +1232,38 @@
                         <input type="number" id="excavationArea" placeholder="0" oninput="autoCalcCheck()">
                     </div>
                     <div class="input-group">
-                        <label>Depth (inches)</label>
+                        <label>Depth (in)</label>
                         <input type="number" id="excavationDepth" placeholder="0" oninput="autoCalcCheck()">
                     </div>
                     <div class="input-group">
                         <label>Cycle Time (min)</label>
-                        <div class="hint">Round-trip + load/unload</div>
                         <input type="number" id="excavationCycle" placeholder="0" oninput="autoCalcCheck()">
                     </div>
                     <div class="input-group">
                         <label>CY/day Rate</label>
-                        <div class="hint">DOT: 250-1,300 | Typ: 600</div>
                         <select id="excavationRate" onchange="autoCalcCheck()">
                             <option value="0">-- Select --</option>
-                            <option value="200">200 - Constrained</option>
-                            <option value="300">300 - Complex lot</option>
-                            <option value="400">400 - Standard lot</option>
+                            <option value="200">200</option>
+                            <option value="300">300</option>
+                            <option value="400">400</option>
                             <option value="500">500</option>
-                            <option value="600">600 - DOT typical</option>
+                            <option value="600">600</option>
                             <option value="800">800</option>
-                            <option value="1000">1000 - Open site</option>
-                            <option value="1300">1300 - DOT max</option>
+                            <option value="1000">1000</option>
                         </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Crew Size</label>
+                        <select id="excCrewSize" onchange="autoCalcCheck()">
+                            <option value="2">2 people</option>
+                            <option value="3" selected>3 people</option>
+                            <option value="4">4 people</option>
+                            <option value="5">5 people</option>
+                        </select>
+                    </div>
+                    <div class="mob-checkbox">
+                        <input type="checkbox" id="excMob" checked onchange="autoCalcCheck()">
+                        <label for="excMob">Include Mobilization</label>
                     </div>
                 </div>
                 <div class="output-card">
@@ -754,8 +1273,11 @@
                         <div class="output-row"><span class="label">Loose CY</span><span class="value" id="excLooseCY">0</span></div>
                         <div class="output-row"><span class="label">Tons</span><span class="value" id="excTons">0</span></div>
                         <div class="output-row highlight"><span class="label">Days</span><span class="value" id="excDays">0</span></div>
-                        <div class="output-row"><span class="label">Trucks Req'd</span><span class="value" id="excTrucks">0</span></div>
-                        <div class="output-row"><span class="label">Truck Hours</span><span class="value" id="excTruckHrs">0</span></div>
+                        <div class="output-row"><span class="label">Trucks</span><span class="value" id="excTrucks">0</span></div>
+                        <div class="output-row"><span class="label">Truck Hrs</span><span class="value" id="excTruckHrs">0</span></div>
+                        <div class="output-divider"></div>
+                        <div class="output-row cost"><span class="label">Labor</span><span class="value" id="excLaborCost">$0</span></div>
+                        <div class="output-row cost"><span class="label">Trucking</span><span class="value" id="excTruckCost">$0</span></div>
                     </div>
                 </div>
             </div>
@@ -770,25 +1292,36 @@
                     </div>
                     <div class="input-group">
                         <label>SY/day Rate</label>
-                        <div class="hint">Parking lot: 2,000-5,000</div>
                         <select id="fineGradingRate" onchange="autoCalcCheck()">
                             <option value="0">-- Select --</option>
-                            <option value="1500">1500 - Complex</option>
+                            <option value="1500">1500</option>
                             <option value="2000">2000</option>
                             <option value="2500">2500</option>
-                            <option value="3000">3000 - Standard</option>
+                            <option value="3000">3000</option>
                             <option value="3500">3500</option>
                             <option value="4000">4000</option>
-                            <option value="5000">5000 - Simple</option>
+                            <option value="5000">5000</option>
                         </select>
                     </div>
-                    <div style="height: 132px;"></div>
+                    <div class="input-group">
+                        <label>Crew Size</label>
+                        <select id="fgCrewSize" onchange="autoCalcCheck()">
+                            <option value="2" selected>2 people</option>
+                            <option value="3">3 people</option>
+                            <option value="4">4 people</option>
+                        </select>
+                    </div>
+                    <div class="mob-checkbox">
+                        <input type="checkbox" id="fgMob" checked onchange="autoCalcCheck()">
+                        <label for="fgMob">Include Mobilization</label>
+                    </div>
                 </div>
                 <div class="output-card">
                     <div class="output-header" style="color: var(--accent-purple);">Output</div>
                     <div class="output-body">
                         <div class="output-row highlight"><span class="label">Days</span><span class="value" id="fgDays">0</span></div>
-                        <div class="output-row"><span class="label">Note</span><span class="value" style="font-size: 0.65rem; color: var(--text-muted);">Equip in Heavybid</span></div>
+                        <div class="output-divider"></div>
+                        <div class="output-row cost"><span class="label">Labor</span><span class="value" id="fgLaborCost">$0</span></div>
                     </div>
                 </div>
             </div>
@@ -802,37 +1335,52 @@
                         <input type="number" id="dgaArea" placeholder="0" oninput="autoCalcCheck()">
                     </div>
                     <div class="input-group">
-                        <label>Depth (inches)</label>
+                        <label>Depth (in)</label>
                         <input type="number" id="dgaDepth" placeholder="0" oninput="autoCalcCheck()">
                     </div>
                     <div class="input-group">
                         <label>Cycle Time (min)</label>
-                        <div class="hint">Round-trip + load/unload</div>
                         <input type="number" id="dgaCycle" placeholder="0" oninput="autoCalcCheck()">
                     </div>
                     <div class="input-group">
                         <label>CY/day Rate</label>
-                        <div class="hint">Parking lot: 250-550</div>
                         <select id="dgaRate" onchange="autoCalcCheck()">
                             <option value="0">-- Select --</option>
-                            <option value="200">200 - Complex</option>
+                            <option value="200">200</option>
                             <option value="300">300</option>
-                            <option value="400">400 - Standard</option>
+                            <option value="400">400</option>
                             <option value="500">500</option>
                             <option value="600">600</option>
-                            <option value="700">700 - Simple</option>
+                            <option value="700">700</option>
                         </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Crew Size</label>
+                        <select id="dgaCrewSize" onchange="autoCalcCheck()">
+                            <option value="2">2 people</option>
+                            <option value="3" selected>3 people</option>
+                            <option value="4">4 people</option>
+                            <option value="5">5 people</option>
+                        </select>
+                    </div>
+                    <div class="mob-checkbox">
+                        <input type="checkbox" id="dgaMob" checked onchange="autoCalcCheck()">
+                        <label for="dgaMob">Include Mobilization</label>
                     </div>
                 </div>
                 <div class="output-card">
                     <div class="output-header" style="color: var(--accent-yellow);">Output</div>
                     <div class="output-body">
-                        <div class="output-row"><span class="label">Volume (CY)</span><span class="value" id="dgaCY">0</span></div>
+                        <div class="output-row"><span class="label">CY</span><span class="value" id="dgaCY">0</span></div>
                         <div class="output-row"><span class="label">Tons</span><span class="value" id="dgaTons">0</span></div>
-                        <div class="output-row"><span class="label">+ Waste</span><span class="value" id="dgaTonsWaste">0</span></div>
+                        <div class="output-row"><span class="label">+Waste</span><span class="value" id="dgaTonsWaste">0</span></div>
                         <div class="output-row highlight"><span class="label">Days</span><span class="value" id="dgaDays">0</span></div>
-                        <div class="output-row"><span class="label">Trucks Req'd</span><span class="value" id="dgaTrucks">0</span></div>
-                        <div class="output-row"><span class="label">Truck Hours</span><span class="value" id="dgaTruckHrs">0</span></div>
+                        <div class="output-row"><span class="label">Trucks</span><span class="value" id="dgaTrucks">0</span></div>
+                        <div class="output-row"><span class="label">Truck Hrs</span><span class="value" id="dgaTruckHrs">0</span></div>
+                        <div class="output-divider"></div>
+                        <div class="output-row cost"><span class="label">Material</span><span class="value" id="dgaMatCost">$0</span></div>
+                        <div class="output-row cost"><span class="label">Labor</span><span class="value" id="dgaLaborCost">$0</span></div>
+                        <div class="output-row cost"><span class="label">Trucking</span><span class="value" id="dgaTruckCost">$0</span></div>
                     </div>
                 </div>
             </div>
@@ -846,29 +1394,39 @@
                         <input type="number" id="millingArea" placeholder="0" oninput="autoCalcCheck()">
                     </div>
                     <div class="input-group">
-                        <label>Depth (inches)</label>
+                        <label>Depth (in)</label>
                         <input type="number" id="millingDepth" placeholder="0" oninput="autoCalcCheck()">
                     </div>
                     <div class="input-group">
                         <label>Cycle Time (min)</label>
-                        <div class="hint">Round-trip + load/unload</div>
                         <input type="number" id="millingCycle" placeholder="0" oninput="autoCalcCheck()">
                     </div>
                     <div class="input-group">
                         <label>SY/day Rate</label>
-                        <div class="hint">DOT: 8,000-20,000 | Lot: 2,500-6,000</div>
                         <select id="millingRate" onchange="autoCalcCheck()">
                             <option value="0">-- Select --</option>
-                            <option value="2000">2000 - Complex lot</option>
+                            <option value="2000">2000</option>
                             <option value="3000">3000</option>
-                            <option value="4000">4000 - Standard lot</option>
+                            <option value="4000">4000</option>
                             <option value="5000">5000</option>
-                            <option value="6000">6000 - Simple lot</option>
-                            <option value="8000">8000 - DOT min</option>
+                            <option value="6000">6000</option>
+                            <option value="8000">8000</option>
                             <option value="10000">10000</option>
-                            <option value="14000">14000 - DOT typical</option>
-                            <option value="17000">17000 - DOT thin mill</option>
+                            <option value="14000">14000</option>
                         </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Crew Size</label>
+                        <select id="millCrewSize" onchange="autoCalcCheck()">
+                            <option value="3">3 people</option>
+                            <option value="4" selected>4 people</option>
+                            <option value="5">5 people</option>
+                            <option value="6">6 people</option>
+                        </select>
+                    </div>
+                    <div class="mob-checkbox">
+                        <input type="checkbox" id="millMob" checked onchange="autoCalcCheck()">
+                        <label for="millMob">Include Mobilization</label>
                     </div>
                 </div>
                 <div class="output-card">
@@ -876,8 +1434,11 @@
                     <div class="output-body">
                         <div class="output-row"><span class="label">RAP Tons</span><span class="value" id="millTons">0</span></div>
                         <div class="output-row highlight"><span class="label">Days</span><span class="value" id="millDays">0</span></div>
-                        <div class="output-row"><span class="label">Trucks Req'd</span><span class="value" id="millTrucks">0</span></div>
-                        <div class="output-row"><span class="label">Truck Hours</span><span class="value" id="millTruckHrs">0</span></div>
+                        <div class="output-row"><span class="label">Trucks</span><span class="value" id="millTrucks">0</span></div>
+                        <div class="output-row"><span class="label">Truck Hrs</span><span class="value" id="millTruckHrs">0</span></div>
+                        <div class="output-divider"></div>
+                        <div class="output-row cost"><span class="label">Labor</span><span class="value" id="millLaborCost">$0</span></div>
+                        <div class="output-row cost"><span class="label">Trucking</span><span class="value" id="millTruckCost">$0</span></div>
                     </div>
                 </div>
             </div>
@@ -891,38 +1452,52 @@
                         <input type="number" id="baseArea" placeholder="0" oninput="autoCalcCheck()">
                     </div>
                     <div class="input-group">
-                        <label>Depth (inches)</label>
+                        <label>Depth (in)</label>
                         <input type="number" id="baseDepth" placeholder="0" oninput="autoCalcCheck()">
                     </div>
                     <div class="input-group">
                         <label>Cycle Time (min)</label>
-                        <div class="hint">Round-trip + load/unload</div>
                         <input type="number" id="baseCycle" placeholder="0" oninput="autoCalcCheck()">
                     </div>
                     <div class="input-group">
                         <label>SY/day Rate</label>
-                        <div class="hint">Parking lot: 1,800-4,500</div>
                         <select id="baseRate" onchange="autoCalcCheck()">
                             <option value="0">-- Select --</option>
-                            <option value="1500">1500 - Complex</option>
+                            <option value="1500">1500</option>
                             <option value="2000">2000</option>
                             <option value="2500">2500</option>
-                            <option value="3000">3000 - Standard</option>
+                            <option value="3000">3000</option>
                             <option value="3500">3500</option>
                             <option value="4000">4000</option>
-                            <option value="4500">4500 - Simple</option>
-                            <option value="5000">5000</option>
+                            <option value="4500">4500</option>
                         </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Crew Size</label>
+                        <select id="baseCrewSize" onchange="autoCalcCheck()">
+                            <option value="4">4 people</option>
+                            <option value="5">5 people</option>
+                            <option value="6" selected>6 people</option>
+                            <option value="8">8 people</option>
+                        </select>
+                    </div>
+                    <div class="mob-checkbox">
+                        <input type="checkbox" id="baseMob" checked onchange="autoCalcCheck()">
+                        <label for="baseMob">Include Mobilization</label>
                     </div>
                 </div>
                 <div class="output-card">
                     <div class="output-header" style="color: var(--accent-blue);">Output</div>
                     <div class="output-body">
                         <div class="output-row"><span class="label">Tons</span><span class="value" id="baseTons">0</span></div>
-                        <div class="output-row"><span class="label">+ Waste</span><span class="value" id="baseTonsWaste">0</span></div>
+                        <div class="output-row"><span class="label">+Waste</span><span class="value" id="baseTonsWaste">0</span></div>
                         <div class="output-row highlight"><span class="label">Days</span><span class="value" id="baseDays">0</span></div>
-                        <div class="output-row"><span class="label">Trucks Req'd</span><span class="value" id="baseTrucks">0</span></div>
-                        <div class="output-row"><span class="label">Truck Hours</span><span class="value" id="baseTruckHrs">0</span></div>
+                        <div class="output-row"><span class="label">Trucks</span><span class="value" id="baseTrucks">0</span></div>
+                        <div class="output-row"><span class="label">Truck Hrs</span><span class="value" id="baseTruckHrs">0</span></div>
+                        <div class="output-divider"></div>
+                        <div class="output-row cost"><span class="label">Material</span><span class="value" id="baseMatCost">$0</span></div>
+                        <div class="output-row cost"><span class="label">Labor</span><span class="value" id="baseLaborCost">$0</span></div>
+                        <div class="output-row cost"><span class="label">Trucking</span><span class="value" id="baseTruckCost">$0</span></div>
                     </div>
                 </div>
             </div>
@@ -936,47 +1511,87 @@
                         <input type="number" id="surfaceArea" placeholder="0" oninput="autoCalcCheck()">
                     </div>
                     <div class="input-group">
-                        <label>Depth (inches)</label>
+                        <label>Depth (in)</label>
                         <input type="number" id="surfaceDepth" placeholder="0" oninput="autoCalcCheck()">
                     </div>
                     <div class="input-group">
                         <label>Cycle Time (min)</label>
-                        <div class="hint">Round-trip + load/unload</div>
                         <input type="number" id="surfaceCycle" placeholder="0" oninput="autoCalcCheck()">
                     </div>
                     <div class="input-group">
                         <label>SY/day Rate</label>
-                        <div class="hint">Parking lot: 2,000-5,000</div>
                         <select id="surfaceRate" onchange="autoCalcCheck()">
                             <option value="0">-- Select --</option>
-                            <option value="1500">1500 - Complex</option>
+                            <option value="1500">1500</option>
                             <option value="2000">2000</option>
                             <option value="2500">2500</option>
-                            <option value="3000">3000 - Standard</option>
+                            <option value="3000">3000</option>
                             <option value="3500">3500</option>
                             <option value="4000">4000</option>
-                            <option value="5000">5000 - Simple</option>
+                            <option value="5000">5000</option>
                         </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Crew Size</label>
+                        <select id="surfCrewSize" onchange="autoCalcCheck()">
+                            <option value="4">4 people</option>
+                            <option value="5">5 people</option>
+                            <option value="6" selected>6 people</option>
+                            <option value="8">8 people</option>
+                        </select>
+                    </div>
+                    <div class="mob-checkbox">
+                        <input type="checkbox" id="surfMob" checked onchange="autoCalcCheck()">
+                        <label for="surfMob">Include Mobilization</label>
                     </div>
                 </div>
                 <div class="output-card">
                     <div class="output-header" style="color: var(--accent-green);">Output</div>
                     <div class="output-body">
                         <div class="output-row"><span class="label">Tons</span><span class="value" id="surfTons">0</span></div>
-                        <div class="output-row"><span class="label">+ Waste</span><span class="value" id="surfTonsWaste">0</span></div>
+                        <div class="output-row"><span class="label">+Waste</span><span class="value" id="surfTonsWaste">0</span></div>
                         <div class="output-row highlight"><span class="label">Days</span><span class="value" id="surfDays">0</span></div>
-                        <div class="output-row"><span class="label">Trucks Req'd</span><span class="value" id="surfTrucks">0</span></div>
-                        <div class="output-row"><span class="label">Truck Hours</span><span class="value" id="surfTruckHrs">0</span></div>
+                        <div class="output-row"><span class="label">Trucks</span><span class="value" id="surfTrucks">0</span></div>
+                        <div class="output-row"><span class="label">Truck Hrs</span><span class="value" id="surfTruckHrs">0</span></div>
+                        <div class="output-divider"></div>
+                        <div class="output-row cost"><span class="label">Material</span><span class="value" id="surfMatCost">$0</span></div>
+                        <div class="output-row cost"><span class="label">Labor</span><span class="value" id="surfLaborCost">$0</span></div>
+                        <div class="output-row cost"><span class="label">Trucking</span><span class="value" id="surfTruckCost">$0</span></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Project Summary -->
+        <!-- Tack Coat Section -->
+        <div class="tack-section">
+            <h3>🛢️ Tack Coat</h3>
+            <div class="tack-grid">
+                <div class="input-group" style="width: 150px;">
+                    <label>Application Area (SY)</label>
+                    <div class="hint">Defaults to Surface Area</div>
+                    <input type="number" id="tackArea" placeholder="0" oninput="autoCalcCheck()">
+                </div>
+                <div class="input-group" style="width: 120px;">
+                    <label>App Rate (gal/SY)</label>
+                    <input type="number" id="tackRateDisplay" value="0.05" step="0.01" readonly style="background: var(--bg-tertiary);">
+                </div>
+            </div>
+            <div class="tack-output">
+                <div class="stat">
+                    <span class="stat-label">Gallons Required</span>
+                    <span class="stat-value" id="tackGallons">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Tack Cost</span>
+                    <span class="stat-value" style="color: var(--accent-green);" id="tackCost">$0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Production Summary -->
         <div class="summary-section">
             <div class="summary-header">
-                <h2>📊 Project Summary</h2>
-                <span style="font-size: 0.75rem; color: var(--text-muted);">Totals across all phases</span>
+                <h2>📊 Production Summary</h2>
             </div>
             <div class="summary-grid">
                 <div class="summary-stat">
@@ -988,15 +1603,15 @@
                     <div class="value"><span id="totalTruckHrs">0</span><span class="unit">hrs</span></div>
                 </div>
                 <div class="summary-stat">
-                    <div class="label">Total HMA Tons</div>
+                    <div class="label">Total HMA</div>
                     <div class="value"><span id="totalHMA">0</span><span class="unit">tons</span></div>
                 </div>
                 <div class="summary-stat">
-                    <div class="label">DGA Tons</div>
+                    <div class="label">DGA</div>
                     <div class="value"><span id="totalDGA">0</span><span class="unit">tons</span></div>
                 </div>
                 <div class="summary-stat">
-                    <div class="label">Excavation CY</div>
+                    <div class="label">Excavation</div>
                     <div class="value"><span id="totalExcCY">0</span><span class="unit">CY</span></div>
                 </div>
                 <div class="summary-stat">
@@ -1006,13 +1621,152 @@
             </div>
         </div>
 
+        <!-- Cost Summary -->
+        <div class="cost-summary">
+            <h2>💵 Cost Summary</h2>
+            <div class="cost-grid">
+                <div class="cost-category">
+                    <h4>Materials</h4>
+                    <div class="cost-line">
+                        <span class="label">9.5mm HMA</span>
+                        <span class="value" id="cost95HMA">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">19mm HMA</span>
+                        <span class="value" id="cost19HMA">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">DGA</span>
+                        <span class="value" id="costDGAMat">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">Tack Coat</span>
+                        <span class="value" id="costTack">$0</span>
+                    </div>
+                    <div class="cost-line subtotal">
+                        <span class="label">Materials Subtotal</span>
+                        <span class="value" id="subtotalMaterials">$0</span>
+                    </div>
+                </div>
+
+                <div class="cost-category">
+                    <h4>Labor & Equipment</h4>
+                    <div class="cost-line">
+                        <span class="label">Excavation</span>
+                        <span class="value" id="costLaborExc">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">Fine Grading</span>
+                        <span class="value" id="costLaborFG">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">DGA</span>
+                        <span class="value" id="costLaborDGA">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">Milling</span>
+                        <span class="value" id="costLaborMill">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">Base Paving</span>
+                        <span class="value" id="costLaborBase">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">Surface Paving</span>
+                        <span class="value" id="costLaborSurf">$0</span>
+                    </div>
+                    <div class="cost-line subtotal">
+                        <span class="label">Labor Subtotal</span>
+                        <span class="value" id="subtotalLabor">$0</span>
+                    </div>
+                </div>
+
+                <div class="cost-category">
+                    <h4>Trucking</h4>
+                    <div class="cost-line">
+                        <span class="label">Excavation</span>
+                        <span class="value" id="costTruckExc">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">DGA</span>
+                        <span class="value" id="costTruckDGA">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">Milling</span>
+                        <span class="value" id="costTruckMill">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">Base Paving</span>
+                        <span class="value" id="costTruckBase">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">Surface Paving</span>
+                        <span class="value" id="costTruckSurf">$0</span>
+                    </div>
+                    <div class="cost-line subtotal">
+                        <span class="label">Trucking Subtotal</span>
+                        <span class="value" id="subtotalTrucking">$0</span>
+                    </div>
+                </div>
+
+                <div class="cost-category">
+                    <h4>Mobilization</h4>
+                    <div class="cost-line">
+                        <span class="label">Excavation</span>
+                        <span class="value" id="costMobExc">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">Fine Grading</span>
+                        <span class="value" id="costMobFG">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">DGA</span>
+                        <span class="value" id="costMobDGA">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">Milling</span>
+                        <span class="value" id="costMobMill">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">Base Paving</span>
+                        <span class="value" id="costMobBase">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">Surface Paving</span>
+                        <span class="value" id="costMobSurf">$0</span>
+                    </div>
+                    <div class="cost-line subtotal">
+                        <span class="label">Mobilization Subtotal</span>
+                        <span class="value" id="subtotalMob">$0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cost-totals">
+                <div class="cost-total-row">
+                    <span class="label">Direct Cost Total</span>
+                    <span class="value" id="directCostTotal">$0</span>
+                </div>
+                <div class="markup-row">
+                    <label>Markup / Profit %</label>
+                    <input type="number" id="markupPercent" value="15" step="1" oninput="autoCalcCheck()">
+                    <span style="color: var(--text-muted);">%</span>
+                    <span class="value" style="margin-left: auto;" id="markupAmount">$0</span>
+                </div>
+                <div class="cost-total-row grand">
+                    <span class="label">BID PRICE</span>
+                    <span class="value" id="bidPrice">$0</span>
+                </div>
+            </div>
+        </div>
+
         <!-- Reference Section -->
         <div class="reference-section">
-            <button class="reference-toggle" onclick="toggleReference(this)">
-                <span>📚 Reference Tables & Source Documentation</span>
+            <button class="panel-toggle" onclick="togglePanel(this, 'referenceContent')">
+                <span>📚 Reference Tables & Crew Assemblies</span>
                 <span class="arrow">▼</span>
             </button>
-            <div class="reference-content" id="referenceContent">
+            <div class="panel-content" id="referenceContent">
                 <div class="reference-grid">
                     <div class="reference-card">
                         <h3>Material Densities</h3>
@@ -1023,33 +1777,57 @@
                             <tr><td>RAP (loose)</td><td>130 lbs/ft³</td><td>FHWA</td></tr>
                             <tr><td>Excavated soil</td><td>1.5 tons/CY</td><td>Caterpillar</td></tr>
                         </table>
-                        <h4>Asphalt Tonnage Formula</h4>
-                        <p style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">
-                            Tons = Area(SY) × Depth(in) × 0.0575<br>
-                            <span style="color: var(--text-muted);">Derived from: 145 lbs/ft³ ÷ 27 ÷ 12 × 9</span>
-                        </p>
-                        <h4>Volume Formula</h4>
-                        <p style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">
-                            CY = Area(SY) × Depth(in) ÷ 324<br>
-                            <span style="color: var(--text-muted);">324 = 9 ft²/SY × 36 in/yd</span>
-                        </p>
+                        <h4>Key Formulas</h4>
+                        <ul>
+                            <li><strong>Asphalt Tons:</strong> Area(SY) × Depth(in) × 0.0575</li>
+                            <li><strong>Volume (CY):</strong> Area(SY) × Depth(in) ÷ 324</li>
+                            <li><strong>RAP Tons:</strong> Area(SY) × Depth(in) × 0.04875</li>
+                        </ul>
                     </div>
 
                     <div class="reference-card">
                         <h3>Production Rates <span class="source-tag">WisDOT 2022</span></h3>
                         <table>
                             <tr><th>Activity</th><th>DOT Range</th><th>Typical</th></tr>
-                            <tr><td>Excavation (truck)</td><td>250-1,300 CY/day</td><td>600</td></tr>
+                            <tr><td>Excavation</td><td>250-1,300 CY/day</td><td>600</td></tr>
+                            <tr><td>Milling (thin)</td><td>8,500-25,000 SY/day</td><td>17,000</td></tr>
+                            <tr><td>Milling (thick)</td><td>8,000-20,000 SY/day</td><td>14,000</td></tr>
                             <tr><td>HMA Paving</td><td>700-1,800 tons/day</td><td>1,300</td></tr>
-                            <tr><td>Milling (thin &lt;2")</td><td>8,500-25,000 SY/day</td><td>17,000</td></tr>
-                            <tr><td>Milling (thick 2"+)</td><td>8,000-20,000 SY/day</td><td>14,000</td></tr>
-                            <tr><td>Base course</td><td>350-1,300 tons/day</td><td>700</td></tr>
                         </table>
                         <h4>Parking Lot Modifiers</h4>
                         <ul>
-                            <li><strong>Simple (0.85×)</strong>: Large retail, minimal obstacles</li>
-                            <li><strong>Standard (0.70×)</strong>: Typical commercial</li>
-                            <li><strong>Complex (0.55×)</strong>: Dense obstacles, extensive hand work</li>
+                            <li><strong>Simple (0.85×):</strong> Large retail, open</li>
+                            <li><strong>Standard (0.70×):</strong> Typical commercial</li>
+                            <li><strong>Complex (0.55×):</strong> Dense obstacles</li>
+                        </ul>
+                    </div>
+
+                    <div class="reference-card">
+                        <h3>Crew & Equipment Assemblies</h3>
+                        <h4>Excavation Crew</h4>
+                        <ul>
+                            <li>Excavator (Cat 320 or similar)</li>
+                            <li>Operator + 1-2 laborers</li>
+                            <li>Skid steer for cleanup</li>
+                        </ul>
+                        <h4>Fine Grading Crew</h4>
+                        <ul>
+                            <li>Motor grader or skid steer</li>
+                            <li>Plate compactor / roller</li>
+                            <li>Operator + 1 laborer</li>
+                        </ul>
+                        <h4>Milling Crew</h4>
+                        <ul>
+                            <li>Cold planer (Wirtgen or similar)</li>
+                            <li>Skid steer for cleanup</li>
+                            <li>Operator + 2-3 laborers</li>
+                        </ul>
+                        <h4>Paving Crew</h4>
+                        <ul>
+                            <li>Asphalt paver</li>
+                            <li>2 rollers (breakdown + finish)</li>
+                            <li>Material transfer vehicle (optional)</li>
+                            <li>Operator + 4-6 laborers</li>
                         </ul>
                     </div>
 
@@ -1062,32 +1840,15 @@
                             <tr><td>Tandem</td><td>10-14 CY</td><td>12-16 tons</td></tr>
                         </table>
                         <h4>Fleet Calculation</h4>
-                        <p style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">
-                            Loads/day = Daily output ÷ truck capacity<br>
-                            Trucks = (Loads × Cycle time) ÷ 480 min<br>
-                            Truck hrs = Trucks × Days × 8 hrs
-                        </p>
-                    </div>
-
-                    <div class="reference-card">
-                        <h3>Adjustment Factors</h3>
-                        <h4>Excavation Swell <span class="source-tag">Caterpillar</span></h4>
-                        <table>
-                            <tr><th>Soil Type</th><th>Swell %</th></tr>
-                            <tr><td>Sand/Gravel</td><td>10-15%</td></tr>
-                            <tr><td>Common earth</td><td>20-30%</td></tr>
-                            <tr><td>Clay</td><td>30-40%</td></tr>
-                        </table>
-                        <h4>Waste Factors</h4>
                         <ul>
-                            <li>Asphalt: 5-10% (7% typical)</li>
-                            <li>Aggregate: 5-10% (7% typical)</li>
+                            <li>Loads/day = Output ÷ truck capacity</li>
+                            <li>Trucks = (Loads × Cycle) ÷ 480 min</li>
+                            <li>Hours = Trucks × Days × 8</li>
                         </ul>
-                        <h4>Trucking Efficiency</h4>
+                        <h4>Tack Coat</h4>
                         <ul>
-                            <li>Ideal conditions: 100%</li>
-                            <li>Standard: 85-90%</li>
-                            <li>Plant delays/queuing: reduce 10-15%</li>
+                            <li>Typical rate: 0.03-0.05 gal/SY</li>
+                            <li>Applied to milled surface or base course prior to surface paving</li>
                         </ul>
                     </div>
                 </div>
@@ -1096,25 +1857,26 @@
 
         <!-- Footer -->
         <footer class="footer">
-            <p>Paving Estimating Calculator v2.0 • Formulas validated against DOT standards and industry sources</p>
-            <p style="margin-top: 0.5rem;">Sources: Wisconsin DOT (2022), Asphalt Institute, FHWA, Caterpillar Equipment Handbook</p>
+            <p>Paving Estimating Calculator v2.0 • Formulas validated against DOT standards</p>
+            <p style="margin-top: 0.5rem;">Sources: Wisconsin DOT (2022), Asphalt Institute, FHWA, Caterpillar</p>
         </footer>
     </div>
 
     <!-- Toast -->
-    <div class="toast" id="toast">Results copied to clipboard!</div>
+    <div class="toast" id="toast">Saved!</div>
 
     <script>
-        // Constants based on research
+        // Constants
         const CONSTANTS = {
-            HMA_DENSITY: 145,           // lbs/ft³ - Asphalt Institute
-            DGA_DENSITY: 1.9,           // tons/CY compacted
-            SOIL_DENSITY: 1.5,          // tons/CY
-            RAP_DENSITY: 130,           // lbs/ft³ loose
-            TRUCK_CY: 16,               // CY capacity for dirt/DGA
-            TRUCK_TONS: 22,             // tons capacity for HMA
-            WORKDAY_MINUTES: 480,       // 8 hour day
-            HMA_FACTOR: 0.0575          // SY × inches × factor = tons
+            HMA_DENSITY: 145,
+            DGA_DENSITY: 1.9,
+            SOIL_DENSITY: 1.5,
+            RAP_DENSITY: 130,
+            TRUCK_CY: 16,
+            TRUCK_TONS: 22,
+            WORKDAY_MINUTES: 480,
+            HMA_FACTOR: 0.0575,
+            RAP_FACTOR: 0.04875
         };
 
         // Utility functions
@@ -1122,8 +1884,22 @@
             return parseFloat(document.getElementById(id).value) || 0;
         }
 
+        function getTextVal(id) {
+            return document.getElementById(id).value || '';
+        }
+
         function setVal(id, val) {
-            document.getElementById(id).textContent = val;
+            const el = document.getElementById(id);
+            if (el) el.textContent = val;
+        }
+
+        function setInputVal(id, val) {
+            const el = document.getElementById(id);
+            if (el) el.value = val;
+        }
+
+        function isChecked(id) {
+            return document.getElementById(id).checked;
         }
 
         function roundHalf(val) {
@@ -1132,6 +1908,10 @@
 
         function roundUp(val, precision = 1) {
             return Math.ceil(val / precision) * precision;
+        }
+
+        function formatCurrency(val) {
+            return '$' + val.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
         }
 
         function convertSfToSy() {
@@ -1145,9 +1925,9 @@
             }
         }
 
-        function toggleReference(btn) {
+        function togglePanel(btn, contentId) {
             btn.classList.toggle('open');
-            document.getElementById('referenceContent').classList.toggle('open');
+            document.getElementById(contentId).classList.toggle('open');
         }
 
         function showToast(message) {
@@ -1157,7 +1937,55 @@
             setTimeout(() => toast.classList.remove('show'), 3000);
         }
 
-        // Main calculation function
+        // Rate management
+        function saveRates() {
+            const rates = {
+                rate95HMA: getVal('rate95HMA'),
+                rate19HMA: getVal('rate19HMA'),
+                rateDGA: getVal('rateDGA'),
+                rateTack: getVal('rateTack'),
+                tackAppRate: getVal('tackAppRate'),
+                fuelIndex: getTextVal('fuelIndex'),
+                acIndex: getTextVal('acIndex'),
+                rateTrucking: getVal('rateTrucking'),
+                rateCrewExc: getVal('rateCrewExc'),
+                rateCrewFG: getVal('rateCrewFG'),
+                rateCrewDGA: getVal('rateCrewDGA'),
+                rateCrewMill: getVal('rateCrewMill'),
+                rateCrewBase: getVal('rateCrewBase'),
+                rateCrewSurf: getVal('rateCrewSurf'),
+                mobExc: getVal('mobExc'),
+                mobFG: getVal('mobFG'),
+                mobDGA: getVal('mobDGA'),
+                mobMill: getVal('mobMill'),
+                mobBase: getVal('mobBase'),
+                mobSurf: getVal('mobSurf')
+            };
+            localStorage.setItem('pavingCalcRates', JSON.stringify(rates));
+            showToast('Rates saved locally!');
+        }
+
+        function loadRates() {
+            const saved = localStorage.getItem('pavingCalcRates');
+            if (saved) {
+                const rates = JSON.parse(saved);
+                Object.keys(rates).forEach(key => {
+                    const el = document.getElementById(key);
+                    if (el) el.value = rates[key];
+                });
+                showToast('Rates loaded!');
+                autoCalcCheck();
+            } else {
+                showToast('No saved rates found');
+            }
+        }
+
+        function clearSavedRates() {
+            localStorage.removeItem('pavingCalcRates');
+            showToast('Saved rates cleared');
+        }
+
+        // Main calculation
         function calculateAll() {
             const complexity = getVal('complexityModifier');
             const asphaltWaste = getVal('asphaltWaste');
@@ -1165,18 +1993,30 @@
             const swellFactor = getVal('swellFactor');
             const truckEfficiency = getVal('truckingEfficiency');
 
-            let totalDays = 0;
-            let totalTruckHrs = 0;
-            let totalHMA = 0;
-            let totalDGA = 0;
-            let totalExcCY = 0;
-            let totalRAP = 0;
+            // Rates
+            const rate95HMA = getVal('rate95HMA');
+            const rate19HMA = getVal('rate19HMA');
+            const rateDGA = getVal('rateDGA');
+            const rateTack = getVal('rateTack');
+            const tackAppRate = getVal('tackAppRate') || 0.05;
+            const rateTrucking = getVal('rateTrucking');
+            const rateCrewExc = getVal('rateCrewExc');
+            const rateCrewFG = getVal('rateCrewFG');
+            const rateCrewDGA = getVal('rateCrewDGA');
+            const rateCrewMill = getVal('rateCrewMill');
+            const rateCrewBase = getVal('rateCrewBase');
+            const rateCrewSurf = getVal('rateCrewSurf');
+
+            // Accumulators
+            let totalDays = 0, totalTruckHrs = 0, totalHMA = 0, totalDGA = 0, totalExcCY = 0, totalRAP = 0;
+            let subtotalMaterials = 0, subtotalLabor = 0, subtotalTrucking = 0, subtotalMob = 0;
 
             // === EXCAVATION ===
             const excArea = getVal('excavationArea');
             const excDepth = getVal('excavationDepth');
             const excCycle = getVal('excavationCycle');
             const excRate = getVal('excavationRate');
+            const excCrewSize = getVal('excCrewSize');
 
             const excBankCY = excArea && excDepth ? roundUp(excArea * excDepth / 324) : 0;
             const excLooseCY = roundUp(excBankCY * swellFactor);
@@ -1186,6 +2026,10 @@
             const excLoadsDay = excDailyVol / CONSTANTS.TRUCK_CY;
             const excTrucks = excLoadsDay && excCycle ? Math.ceil((excLoadsDay * excCycle) / (CONSTANTS.WORKDAY_MINUTES * truckEfficiency)) : 0;
             const excTruckHrs = roundUp(excTrucks * excDays * 8);
+            const excLaborHrs = excDays * 8 * excCrewSize;
+            const excLaborCost = excLaborHrs * rateCrewExc;
+            const excTruckCost = excTruckHrs * rateTrucking;
+            const excMobCost = isChecked('excMob') && excDays > 0 ? getVal('mobExc') : 0;
 
             setVal('excBankCY', excBankCY);
             setVal('excLooseCY', excLooseCY);
@@ -1193,33 +2037,53 @@
             setVal('excDays', excDays);
             setVal('excTrucks', excTrucks);
             setVal('excTruckHrs', excTruckHrs);
+            setVal('excLaborCost', formatCurrency(excLaborCost));
+            setVal('excTruckCost', formatCurrency(excTruckCost));
 
             totalDays += excDays;
             totalTruckHrs += excTruckHrs;
             totalExcCY = excBankCY;
+            subtotalLabor += excLaborCost;
+            subtotalTrucking += excTruckCost;
+            subtotalMob += excMobCost;
 
             // === FINE GRADING ===
             const fgArea = getVal('fineGradingArea');
             const fgRate = getVal('fineGradingRate');
+            const fgCrewSize = getVal('fgCrewSize');
+
             const fgDays = fgArea && fgRate ? roundHalf(fgArea / (fgRate * complexity)) : 0;
+            const fgLaborHrs = fgDays * 8 * fgCrewSize;
+            const fgLaborCost = fgLaborHrs * rateCrewFG;
+            const fgMobCost = isChecked('fgMob') && fgDays > 0 ? getVal('mobFG') : 0;
 
             setVal('fgDays', fgDays);
+            setVal('fgLaborCost', formatCurrency(fgLaborCost));
+
             totalDays += fgDays;
+            subtotalLabor += fgLaborCost;
+            subtotalMob += fgMobCost;
 
             // === DGA ===
             const dgaArea = getVal('dgaArea');
             const dgaDepth = getVal('dgaDepth');
             const dgaCycle = getVal('dgaCycle');
-            const dgaRate = getVal('dgaRate');
+            const dgaRateVal = getVal('dgaRate');
+            const dgaCrewSize = getVal('dgaCrewSize');
 
             const dgaCY = dgaArea && dgaDepth ? roundUp(dgaArea * dgaDepth / 324) : 0;
             const dgaTons = roundUp(dgaCY * CONSTANTS.DGA_DENSITY);
             const dgaTonsWaste = roundUp(dgaTons * aggregateWaste);
-            const dgaDays = dgaCY && dgaRate ? roundHalf(dgaCY / (dgaRate * complexity)) : 0;
+            const dgaDays = dgaCY && dgaRateVal ? roundHalf(dgaCY / (dgaRateVal * complexity)) : 0;
             const dgaDailyVol = dgaDays > 0 ? dgaCY / dgaDays : 0;
             const dgaLoadsDay = dgaDailyVol / CONSTANTS.TRUCK_CY;
             const dgaTrucks = dgaLoadsDay && dgaCycle ? Math.ceil((dgaLoadsDay * dgaCycle) / (CONSTANTS.WORKDAY_MINUTES * truckEfficiency)) : 0;
             const dgaTruckHrs = roundUp(dgaTrucks * dgaDays * 8);
+            const dgaMatCost = dgaTonsWaste * rateDGA;
+            const dgaLaborHrs = dgaDays * 8 * dgaCrewSize;
+            const dgaLaborCost = dgaLaborHrs * rateCrewDGA;
+            const dgaTruckCost = dgaTruckHrs * rateTrucking;
+            const dgaMobCost = isChecked('dgaMob') && dgaDays > 0 ? getVal('mobDGA') : 0;
 
             setVal('dgaCY', dgaCY);
             setVal('dgaTons', dgaTons);
@@ -1227,85 +2091,138 @@
             setVal('dgaDays', dgaDays);
             setVal('dgaTrucks', dgaTrucks);
             setVal('dgaTruckHrs', dgaTruckHrs);
+            setVal('dgaMatCost', formatCurrency(dgaMatCost));
+            setVal('dgaLaborCost', formatCurrency(dgaLaborCost));
+            setVal('dgaTruckCost', formatCurrency(dgaTruckCost));
 
             totalDays += dgaDays;
             totalTruckHrs += dgaTruckHrs;
             totalDGA = dgaTonsWaste;
+            subtotalMaterials += dgaMatCost;
+            subtotalLabor += dgaLaborCost;
+            subtotalTrucking += dgaTruckCost;
+            subtotalMob += dgaMobCost;
 
             // === MILLING ===
             const millArea = getVal('millingArea');
             const millDepth = getVal('millingDepth');
             const millCycle = getVal('millingCycle');
-            const millRate = getVal('millingRate');
+            const millRateVal = getVal('millingRate');
+            const millCrewSize = getVal('millCrewSize');
 
-            // RAP tons: Area(SY) × Depth(in) × 130 lbs/ft³ converted properly
-            // SY to ft² = ×9, inches to ft = ÷12, lbs to tons = ÷2000
-            // = Area × 9 × Depth/12 × 130 / 2000
-            // = Area × Depth × 9 × 130 / 12 / 2000
-            // = Area × Depth × 0.04875
-            const millTons = millArea && millDepth ? roundUp(millArea * millDepth * 0.04875) : 0;
-            const millDays = millArea && millRate ? roundHalf(millArea / (millRate * complexity)) : 0;
+            const millTons = millArea && millDepth ? roundUp(millArea * millDepth * CONSTANTS.RAP_FACTOR) : 0;
+            const millDays = millArea && millRateVal ? roundHalf(millArea / (millRateVal * complexity)) : 0;
             const millDailyTons = millDays > 0 ? millTons / millDays : 0;
             const millLoadsDay = millDailyTons / CONSTANTS.TRUCK_TONS;
             const millTrucks = millLoadsDay && millCycle ? Math.ceil((millLoadsDay * millCycle) / (CONSTANTS.WORKDAY_MINUTES * truckEfficiency)) : 0;
             const millTruckHrs = roundUp(millTrucks * millDays * 8);
+            const millLaborHrs = millDays * 8 * millCrewSize;
+            const millLaborCost = millLaborHrs * rateCrewMill;
+            const millTruckCost = millTruckHrs * rateTrucking;
+            const millMobCost = isChecked('millMob') && millDays > 0 ? getVal('mobMill') : 0;
 
             setVal('millTons', millTons);
             setVal('millDays', millDays);
             setVal('millTrucks', millTrucks);
             setVal('millTruckHrs', millTruckHrs);
+            setVal('millLaborCost', formatCurrency(millLaborCost));
+            setVal('millTruckCost', formatCurrency(millTruckCost));
 
             totalDays += millDays;
             totalTruckHrs += millTruckHrs;
             totalRAP = millTons;
+            subtotalLabor += millLaborCost;
+            subtotalTrucking += millTruckCost;
+            subtotalMob += millMobCost;
 
             // === BASE COURSE ===
             const baseArea = getVal('baseArea');
             const baseDepth = getVal('baseDepth');
             const baseCycle = getVal('baseCycle');
-            const baseRate = getVal('baseRate');
+            const baseRateVal = getVal('baseRate');
+            const baseCrewSize = getVal('baseCrewSize');
 
             const baseTons = baseArea && baseDepth ? roundUp(baseArea * baseDepth * CONSTANTS.HMA_FACTOR) : 0;
             const baseTonsWaste = roundUp(baseTons * asphaltWaste);
-            const baseDays = baseArea && baseRate ? roundHalf(baseArea / (baseRate * complexity)) : 0;
+            const baseDays = baseArea && baseRateVal ? roundHalf(baseArea / (baseRateVal * complexity)) : 0;
             const baseDailyTons = baseDays > 0 ? baseTonsWaste / baseDays : 0;
             const baseLoadsDay = baseDailyTons / CONSTANTS.TRUCK_TONS;
             const baseTrucks = baseLoadsDay && baseCycle ? Math.ceil((baseLoadsDay * baseCycle) / (CONSTANTS.WORKDAY_MINUTES * truckEfficiency)) : 0;
             const baseTruckHrs = roundUp(baseTrucks * baseDays * 8);
+            const baseMatCost = baseTonsWaste * rate19HMA;
+            const baseLaborHrs = baseDays * 8 * baseCrewSize;
+            const baseLaborCost = baseLaborHrs * rateCrewBase;
+            const baseTruckCost = baseTruckHrs * rateTrucking;
+            const baseMobCost = isChecked('baseMob') && baseDays > 0 ? getVal('mobBase') : 0;
 
             setVal('baseTons', baseTons);
             setVal('baseTonsWaste', baseTonsWaste);
             setVal('baseDays', baseDays);
             setVal('baseTrucks', baseTrucks);
             setVal('baseTruckHrs', baseTruckHrs);
+            setVal('baseMatCost', formatCurrency(baseMatCost));
+            setVal('baseLaborCost', formatCurrency(baseLaborCost));
+            setVal('baseTruckCost', formatCurrency(baseTruckCost));
 
             totalDays += baseDays;
             totalTruckHrs += baseTruckHrs;
             totalHMA += baseTonsWaste;
+            subtotalMaterials += baseMatCost;
+            subtotalLabor += baseLaborCost;
+            subtotalTrucking += baseTruckCost;
+            subtotalMob += baseMobCost;
 
             // === SURFACE COURSE ===
             const surfArea = getVal('surfaceArea');
             const surfDepth = getVal('surfaceDepth');
             const surfCycle = getVal('surfaceCycle');
-            const surfRate = getVal('surfaceRate');
+            const surfRateVal = getVal('surfaceRate');
+            const surfCrewSize = getVal('surfCrewSize');
 
             const surfTons = surfArea && surfDepth ? roundUp(surfArea * surfDepth * CONSTANTS.HMA_FACTOR) : 0;
             const surfTonsWaste = roundUp(surfTons * asphaltWaste);
-            const surfDays = surfArea && surfRate ? roundHalf(surfArea / (surfRate * complexity)) : 0;
+            const surfDays = surfArea && surfRateVal ? roundHalf(surfArea / (surfRateVal * complexity)) : 0;
             const surfDailyTons = surfDays > 0 ? surfTonsWaste / surfDays : 0;
             const surfLoadsDay = surfDailyTons / CONSTANTS.TRUCK_TONS;
             const surfTrucks = surfLoadsDay && surfCycle ? Math.ceil((surfLoadsDay * surfCycle) / (CONSTANTS.WORKDAY_MINUTES * truckEfficiency)) : 0;
             const surfTruckHrs = roundUp(surfTrucks * surfDays * 8);
+            const surfMatCost = surfTonsWaste * rate95HMA;
+            const surfLaborHrs = surfDays * 8 * surfCrewSize;
+            const surfLaborCost = surfLaborHrs * rateCrewSurf;
+            const surfTruckCost = surfTruckHrs * rateTrucking;
+            const surfMobCost = isChecked('surfMob') && surfDays > 0 ? getVal('mobSurf') : 0;
 
             setVal('surfTons', surfTons);
             setVal('surfTonsWaste', surfTonsWaste);
             setVal('surfDays', surfDays);
             setVal('surfTrucks', surfTrucks);
             setVal('surfTruckHrs', surfTruckHrs);
+            setVal('surfMatCost', formatCurrency(surfMatCost));
+            setVal('surfLaborCost', formatCurrency(surfLaborCost));
+            setVal('surfTruckCost', formatCurrency(surfTruckCost));
 
             totalDays += surfDays;
             totalTruckHrs += surfTruckHrs;
             totalHMA += surfTonsWaste;
+            subtotalMaterials += surfMatCost;
+            subtotalLabor += surfLaborCost;
+            subtotalTrucking += surfTruckCost;
+            subtotalMob += surfMobCost;
+
+            // === TACK COAT ===
+            let tackArea = getVal('tackArea');
+            if (!tackArea && surfArea) {
+                tackArea = surfArea;
+                setInputVal('tackArea', surfArea);
+            }
+            document.getElementById('tackRateDisplay').value = tackAppRate;
+            const tackGallons = roundUp(tackArea * tackAppRate);
+            const tackCost = tackGallons * rateTack;
+
+            setVal('tackGallons', tackGallons);
+            setVal('tackCost', formatCurrency(tackCost));
+
+            subtotalMaterials += tackCost;
 
             // === SUMMARY ===
             setVal('totalDays', totalDays);
@@ -1314,91 +2231,147 @@
             setVal('totalDGA', totalDGA);
             setVal('totalExcCY', totalExcCY);
             setVal('totalRAP', totalRAP);
+
+            // === COST SUMMARY ===
+            setVal('cost95HMA', formatCurrency(surfMatCost));
+            setVal('cost19HMA', formatCurrency(baseMatCost));
+            setVal('costDGAMat', formatCurrency(dgaMatCost));
+            setVal('costTack', formatCurrency(tackCost));
+            setVal('subtotalMaterials', formatCurrency(subtotalMaterials));
+
+            setVal('costLaborExc', formatCurrency(excLaborCost));
+            setVal('costLaborFG', formatCurrency(fgLaborCost));
+            setVal('costLaborDGA', formatCurrency(dgaLaborCost));
+            setVal('costLaborMill', formatCurrency(millLaborCost));
+            setVal('costLaborBase', formatCurrency(baseLaborCost));
+            setVal('costLaborSurf', formatCurrency(surfLaborCost));
+            setVal('subtotalLabor', formatCurrency(subtotalLabor));
+
+            setVal('costTruckExc', formatCurrency(excTruckCost));
+            setVal('costTruckDGA', formatCurrency(dgaTruckCost));
+            setVal('costTruckMill', formatCurrency(millTruckCost));
+            setVal('costTruckBase', formatCurrency(baseTruckCost));
+            setVal('costTruckSurf', formatCurrency(surfTruckCost));
+            setVal('subtotalTrucking', formatCurrency(subtotalTrucking));
+
+            setVal('costMobExc', formatCurrency(excMobCost));
+            setVal('costMobFG', formatCurrency(fgMobCost));
+            setVal('costMobDGA', formatCurrency(dgaMobCost));
+            setVal('costMobMill', formatCurrency(millMobCost));
+            setVal('costMobBase', formatCurrency(baseMobCost));
+            setVal('costMobSurf', formatCurrency(surfMobCost));
+            setVal('subtotalMob', formatCurrency(subtotalMob));
+
+            const directCost = subtotalMaterials + subtotalLabor + subtotalTrucking + subtotalMob;
+            const markupPercent = getVal('markupPercent');
+            const markupAmount = directCost * (markupPercent / 100);
+            const bidPrice = directCost + markupAmount;
+
+            setVal('directCostTotal', formatCurrency(directCost));
+            setVal('markupAmount', formatCurrency(markupAmount));
+            setVal('bidPrice', formatCurrency(bidPrice));
         }
 
         function resetForm() {
-            // Reset all inputs
-            document.querySelectorAll('input[type="number"]').forEach(input => {
-                if (!input.readOnly) input.value = '';
+            document.querySelectorAll('input[type="number"]:not([id^="rate"]):not([id^="mob"]):not([id="markupPercent"]):not([id="tackAppRate"])').forEach(input => {
+                if (!input.readOnly && !input.id.includes('rate') && !input.id.includes('mob')) input.value = '';
             });
+            document.getElementById('projectName').value = '';
+            document.getElementById('tackArea').value = '';
+            
             document.querySelectorAll('select').forEach(select => {
                 if (!select.id.includes('Modifier') && !select.id.includes('Waste') && 
-                    !select.id.includes('Swell') && !select.id.includes('Efficiency')) {
+                    !select.id.includes('Swell') && !select.id.includes('Efficiency') &&
+                    !select.id.includes('CrewSize')) {
                     select.selectedIndex = 0;
                 }
             });
 
-            // Reset outputs
-            const outputs = ['excBankCY', 'excLooseCY', 'excTons', 'excDays', 'excTrucks', 'excTruckHrs',
-                           'fgDays', 'dgaCY', 'dgaTons', 'dgaTonsWaste', 'dgaDays', 'dgaTrucks', 'dgaTruckHrs',
-                           'millTons', 'millDays', 'millTrucks', 'millTruckHrs',
-                           'baseTons', 'baseTonsWaste', 'baseDays', 'baseTrucks', 'baseTruckHrs',
-                           'surfTons', 'surfTonsWaste', 'surfDays', 'surfTrucks', 'surfTruckHrs',
-                           'totalDays', 'totalTruckHrs', 'totalHMA', 'totalDGA', 'totalExcCY', 'totalRAP'];
-            outputs.forEach(id => setVal(id, '0'));
-
-            document.getElementById('sqFeetInput').value = '';
-            document.getElementById('sqYardsResult').value = '0';
+            calculateAll();
+            showToast('Form reset');
         }
 
         function exportResults() {
-            const results = `PAVING ESTIMATE SUMMARY
-Generated: ${new Date().toLocaleString()}
+            const projectName = getTextVal('projectName') || 'Unnamed Project';
+            const fuelIndex = getTextVal('fuelIndex') || 'Not specified';
+            const acIndex = getTextVal('acIndex') || 'Not specified';
+
+            const results = `PAVING ESTIMATE
 =====================================
+Project: ${projectName}
+Generated: ${new Date().toLocaleString()}
+Fuel Index: ${fuelIndex}
+AC Index: ${acIndex}
+=====================================
+
+PRODUCTION SUMMARY
+------------------
+Total Days: ${document.getElementById('totalDays').textContent}
+Total Truck Hours: ${document.getElementById('totalTruckHrs').textContent}
+Total HMA: ${document.getElementById('totalHMA').textContent} tons
+Total DGA: ${document.getElementById('totalDGA').textContent} tons
+Excavation: ${document.getElementById('totalExcCY').textContent} CY
+RAP Generated: ${document.getElementById('totalRAP').textContent} tons
 
 EXCAVATION
   Bank CY: ${document.getElementById('excBankCY').textContent}
   Loose CY: ${document.getElementById('excLooseCY').textContent}
-  Tons: ${document.getElementById('excTons').textContent}
   Days: ${document.getElementById('excDays').textContent}
-  Trucks: ${document.getElementById('excTrucks').textContent}
-  Truck Hours: ${document.getElementById('excTruckHrs').textContent}
+  Labor: ${document.getElementById('excLaborCost').textContent}
+  Trucking: ${document.getElementById('excTruckCost').textContent}
 
 FINE GRADING
   Days: ${document.getElementById('fgDays').textContent}
+  Labor: ${document.getElementById('fgLaborCost').textContent}
 
 DGA BASE
-  CY: ${document.getElementById('dgaCY').textContent}
-  Tons: ${document.getElementById('dgaTons').textContent}
-  Tons w/Waste: ${document.getElementById('dgaTonsWaste').textContent}
+  Tons (w/waste): ${document.getElementById('dgaTonsWaste').textContent}
   Days: ${document.getElementById('dgaDays').textContent}
-  Trucks: ${document.getElementById('dgaTrucks').textContent}
-  Truck Hours: ${document.getElementById('dgaTruckHrs').textContent}
+  Material: ${document.getElementById('dgaMatCost').textContent}
+  Labor: ${document.getElementById('dgaLaborCost').textContent}
+  Trucking: ${document.getElementById('dgaTruckCost').textContent}
 
 MILLING
   RAP Tons: ${document.getElementById('millTons').textContent}
   Days: ${document.getElementById('millDays').textContent}
-  Trucks: ${document.getElementById('millTrucks').textContent}
-  Truck Hours: ${document.getElementById('millTruckHrs').textContent}
+  Labor: ${document.getElementById('millLaborCost').textContent}
+  Trucking: ${document.getElementById('millTruckCost').textContent}
 
 19mm BASE COURSE
-  Tons: ${document.getElementById('baseTons').textContent}
-  Tons w/Waste: ${document.getElementById('baseTonsWaste').textContent}
+  Tons (w/waste): ${document.getElementById('baseTonsWaste').textContent}
   Days: ${document.getElementById('baseDays').textContent}
-  Trucks: ${document.getElementById('baseTrucks').textContent}
-  Truck Hours: ${document.getElementById('baseTruckHrs').textContent}
+  Material: ${document.getElementById('baseMatCost').textContent}
+  Labor: ${document.getElementById('baseLaborCost').textContent}
+  Trucking: ${document.getElementById('baseTruckCost').textContent}
 
 9.5mm SURFACE COURSE
-  Tons: ${document.getElementById('surfTons').textContent}
-  Tons w/Waste: ${document.getElementById('surfTonsWaste').textContent}
+  Tons (w/waste): ${document.getElementById('surfTonsWaste').textContent}
   Days: ${document.getElementById('surfDays').textContent}
-  Trucks: ${document.getElementById('surfTrucks').textContent}
-  Truck Hours: ${document.getElementById('surfTruckHrs').textContent}
+  Material: ${document.getElementById('surfMatCost').textContent}
+  Labor: ${document.getElementById('surfLaborCost').textContent}
+  Trucking: ${document.getElementById('surfTruckCost').textContent}
+
+TACK COAT
+  Gallons: ${document.getElementById('tackGallons').textContent}
+  Cost: ${document.getElementById('tackCost').textContent}
 
 =====================================
-PROJECT TOTALS
-  Total Days: ${document.getElementById('totalDays').textContent}
-  Total Truck Hours: ${document.getElementById('totalTruckHrs').textContent}
-  Total HMA Tons: ${document.getElementById('totalHMA').textContent}
-  Total DGA Tons: ${document.getElementById('totalDGA').textContent}
-  Total Excavation CY: ${document.getElementById('totalExcCY').textContent}
-  Total RAP Generated: ${document.getElementById('totalRAP').textContent}
+COST SUMMARY
+=====================================
+Materials Subtotal: ${document.getElementById('subtotalMaterials').textContent}
+Labor Subtotal: ${document.getElementById('subtotalLabor').textContent}
+Trucking Subtotal: ${document.getElementById('subtotalTrucking').textContent}
+Mobilization Subtotal: ${document.getElementById('subtotalMob').textContent}
+-------------------------------------
+DIRECT COST: ${document.getElementById('directCostTotal').textContent}
+Markup (${document.getElementById('markupPercent').value}%): ${document.getElementById('markupAmount').textContent}
+=====================================
+BID PRICE: ${document.getElementById('bidPrice').textContent}
 =====================================`;
 
             navigator.clipboard.writeText(results).then(() => {
                 showToast('Results copied to clipboard!');
             }).catch(() => {
-                // Fallback for older browsers
                 const textarea = document.createElement('textarea');
                 textarea.value = results;
                 document.body.appendChild(textarea);
@@ -1408,6 +2381,18 @@ PROJECT TOTALS
                 showToast('Results copied to clipboard!');
             });
         }
+
+        // Load saved rates on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const saved = localStorage.getItem('pavingCalcRates');
+            if (saved) {
+                const rates = JSON.parse(saved);
+                Object.keys(rates).forEach(key => {
+                    const el = document.getElementById(key);
+                    if (el) el.value = rates[key];
+                });
+            }
+        });
     </script>
 </body>
 </html>
