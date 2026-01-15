@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paving Estimating Calculator 2.0</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0f1a;
+            --bg-secondary: #111827;
+            --bg-tertiary: #1a2332;
+            --bg-input: #0d1320;
+            --border-color: #2a3548;
+            --border-highlight: #3b4d6b;
+            --text-primary: #e8edf5;
+            --text-secondary: #9ca8bc;
+            --text-muted: #6b7a94;
+            --accent-red: #ef5350;
+            --accent-red-dim: #c62828;
+            --accent-yellow: #fdd835;
+            --accent-yellow-dim: #f9a825;
+            --accent-purple: #ab47bc;
+            --accent-purple-dim: #7b1fa2;
+            --accent-pink: #f06292;
+            --accent-pink-dim: #c2185b;
+            --accent-blue: #42a5f5;
+            --accent-blue-dim: #1565c0;
+            --accent-green: #66bb6a;
+            --accent-green-dim: #2e7d32;
+            --accent-orange: #ffa726;
+            --accent-cyan: #26c6da;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --danger: #f44336;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-orange), var(--accent-yellow));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--bg-primary);
+        }
+
+        .logo-text h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+
+        .logo-text span {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-blue-dim));
+            color: white;
+            box-shadow: 0 2px 8px rgba(66, 165, 245, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(66, 165, 245, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-green-dim));
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--accent-red), var(--accent-red-dim));
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        /* Converter */
+        .converter-inline {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--bg-tertiary);
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+        }
+
+        .converter-inline input {
+            width: 80px;
+            padding: 0.35rem 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--bg-input);
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            text-align: right;
+        }
+
+        .converter-inline input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+
+        .converter-inline span {
+            color: var(--text-muted);
+        }
+
+        /* Settings Panel */
+        .settings-panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .settings-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            align-items: flex-end;
+        }
+
+        .setting-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .setting-group label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .setting-group input,
+        .setting-group select {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--bg-input);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            min-width: 120px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent-blue);
+        }
+
+        .checkbox-group label {
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            text-transform: none;
+            letter-spacing: normal;
+        }
+
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (max-width: 1200px) {
+            .main-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Section Cards */
+        .section-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: border-color 0.2s ease;
+        }
+
+        .section-card:hover {
+            border-color: var(--border-highlight);
+        }
+
+        .section-header {
+            padding: 0.75rem 1rem;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 2px solid;
+        }
+
+        .section-header.red { background: rgba(239, 83, 80, 0.1); border-color: var(--accent-red); color: var(--accent-red); }
+        .section-header.purple { background: rgba(171, 71, 188, 0.1); border-color: var(--accent-purple); color: var(--accent-purple); }
+        .section-header.yellow { background: rgba(253, 216, 53, 0.1); border-color: var(--accent-yellow); color: var(--accent-yellow); }
+        .section-header.pink { background: rgba(240, 98, 146, 0.1); border-color: var(--accent-pink); color: var(--accent-pink); }
+        .section-header.blue { background: rgba(66, 165, 245, 0.1); border-color: var(--accent-blue); color: var(--accent-blue); }
+        .section-header.green { background: rgba(102, 187, 106, 0.1); border-color: var(--accent-green); color: var(--accent-green); }
+
+        .section-body {
+            padding: 1rem;
+        }
+
+        .input-group {
+            margin-bottom: 0.875rem;
+        }
+
+        .input-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .input-group .hint {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+            font-style: italic;
+        }
+
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--bg-input);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            font-family: 'JetBrains Mono', monospace;
+            transition: border-color 0.2s ease;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 2px rgba(66, 165, 245, 0.15);
+        }
+
+        .input-group input::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* Output Section */
+        .output-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .output-header {
+            padding: 0.5rem 1rem;
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .output-body {
+            padding: 0.75rem 1rem;
+        }
+
+        .output-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.25rem 0;
+            font-size: 0.8rem;
+        }
+
+        .output-row .label {
+            color: var(--text-secondary);
+        }
+
+        .output-row .value {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .output-row.highlight .value {
+            color: var(--accent-cyan);
+            font-size: 0.9rem;
+        }
+
+        /* Summary Section */
+        .summary-section {
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+            border: 2px solid var(--accent-orange);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .summary-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .summary-header h2 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--accent-orange);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+
+        .summary-stat {
+            background: var(--bg-primary);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .summary-stat .label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .summary-stat .value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .summary-stat .unit {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-left: 0.25rem;
+        }
+
+        .summary-stat.warning .value { color: var(--warning); }
+        .summary-stat.success .value { color: var(--success); }
+
+        /* Reference Section */
+        .reference-section {
+            margin-top: 2rem;
+        }
+
+        .reference-toggle {
+            width: 100%;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .reference-toggle:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .reference-toggle .arrow {
+            transition: transform 0.3s ease;
+            font-size: 1.25rem;
+        }
+
+        .reference-toggle.open .arrow {
+            transform: rotate(180deg);
+        }
+
+        .reference-content {
+            display: none;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            padding: 1.5rem;
+            margin-top: -8px;
+        }
+
+        .reference-content.open {
+            display: block;
+        }
+
+        .reference-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 900px) {
+            .reference-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .reference-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.25rem;
+        }
+
+        .reference-card h3 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .reference-card h4 {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin: 1rem 0 0.5rem 0;
+        }
+
+        .reference-card table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+        }
+
+        .reference-card table th,
+        .reference-card table td {
+            padding: 0.4rem 0.5rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .reference-card table th {
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.65rem;
+            letter-spacing: 0.05em;
+        }
+
+        .reference-card table td {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-secondary);
+        }
+
+        .reference-card ul {
+            padding-left: 1.25rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .reference-card li {
+            margin-bottom: 0.35rem;
+        }
+
+        .source-tag {
+            display: inline-block;
+            background: var(--bg-tertiary);
+            color: var(--text-muted);
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-family: 'JetBrains Mono', monospace;
+            margin-left: 0.5rem;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--accent-green);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .footer a {
+            color: var(--accent-blue);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <div class="logo">
+                    <div class="logo-icon">P</div>
+                    <div class="logo-text">
+                        <h1>Paving Estimating Calculator</h1>
+                        <span>v2.0 • Research-Backed Formulas</span>
+                    </div>
+                </div>
+            </div>
+            <div class="header-controls">
+                <div class="converter-inline">
+                    <input type="number" id="sqFeetInput" placeholder="0" oninput="convertSfToSy()">
+                    <span>SF</span>
+                    <span>=</span>
+                    <input type="number" id="sqYardsResult" value="0" readonly style="background: var(--bg-tertiary);">
+                    <span>SY</span>
+                </div>
+                <button class="btn btn-primary" onclick="calculateAll()">
+                    <span>⚡</span> Calculate
+                </button>
+                <button class="btn btn-secondary" onclick="exportResults()">
+                    <span>📋</span> Export
+                </button>
+                <button class="btn btn-danger" onclick="resetForm()">
+                    <span>↺</span> Reset
+                </button>
+            </div>
+        </header>
+
+        <!-- Global Settings -->
+        <div class="settings-panel">
+            <div class="settings-row">
+                <div class="setting-group">
+                    <label>Project Complexity</label>
+                    <select id="complexityModifier" onchange="if(document.getElementById('autoCalc').checked) calculateAll()">
+                        <option value="0.85">Simple (0.85×) - Large retail, open access</option>
+                        <option value="0.70" selected>Standard (0.70×) - Typical commercial</option>
+                        <option value="0.55">Complex (0.55×) - Dense obstacles, tight spaces</option>
+                        <option value="1.00">Roadway (1.0×) - DOT standard rates</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label>Asphalt Waste Factor</label>
+                    <select id="asphaltWaste" onchange="if(document.getElementById('autoCalc').checked) calculateAll()">
+                        <option value="1.05">5% - Typical</option>
+                        <option value="1.07" selected>7% - Standard</option>
+                        <option value="1.10">10% - Complex</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label>Aggregate Waste Factor</label>
+                    <select id="aggregateWaste" onchange="if(document.getElementById('autoCalc').checked) calculateAll()">
+                        <option value="1.05">5%</option>
+                        <option value="1.07" selected>7%</option>
+                        <option value="1.10">10%</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label>Excavation Swell</label>
+                    <select id="swellFactor" onchange="if(document.getElementById('autoCalc').checked) calculateAll()">
+                        <option value="1.15">15% - Sandy</option>
+                        <option value="1.25" selected>25% - Typical</option>
+                        <option value="1.35">35% - Clay</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label>Trucking Efficiency</label>
+                    <select id="truckingEfficiency" onchange="if(document.getElementById('autoCalc').checked) calculateAll()">
+                        <option value="1.00">100% - Ideal</option>
+                        <option value="0.90" selected>90% - Standard</option>
+                        <option value="0.85">85% - Constrained</option>
+                    </select>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="autoCalc" checked>
+                    <label for="autoCalc">Auto-calculate</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Grid -->
+        <div class="main-grid">
+            <!-- Excavation -->
+            <div class="section-card">
+                <div class="section-header red">Excavation</div>
+                <div class="section-body">
+                    <div class="input-group">
+                        <label>Area (SY)</label>
+                        <input type="number" id="excavationArea" placeholder="0" oninput="autoCalcCheck()">
+                    </div>
+                    <div class="input-group">
+                        <label>Depth (inches)</label>
+                        <input type="number" id="excavationDepth" placeholder="0" oninput="autoCalcCheck()">
+                    </div>
+                    <div class="input-group">
+                        <label>Cycle Time (min)</label>
+                        <div class="hint">Round-trip + load/unload</div>
+                        <input type="number" id="excavationCycle" placeholder="0" oninput="autoCalcCheck()">
+                    </div>
+                    <div class="input-group">
+                        <label>CY/day Rate</label>
+                        <div class="hint">DOT: 250-1,300 | Typ: 600</div>
+                        <select id="excavationRate" onchange="autoCalcCheck()">
+                            <option value="0">-- Select --</option>
+                            <option value="200">200 - Constrained</option>
+                            <option value="300">300 - Complex lot</option>
+                            <option value="400">400 - Standard lot</option>
+                            <option value="500">500</option>
+                            <option value="600">600 - DOT typical</option>
+                            <option value="800">800</option>
+                            <option value="1000">1000 - Open site</option>
+                            <option value="1300">1300 - DOT max</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="output-card">
+                    <div class="output-header" style="color: var(--accent-red);">Output</div>
+                    <div class="output-body">
+                        <div class="output-row"><span class="label">Bank CY</span><span class="value" id="excBankCY">0</span></div>
+                        <div class="output-row"><span class="label">Loose CY</span><span class="value" id="excLooseCY">0</span></div>
+                        <div class="output-row"><span class="label">Tons</span><span class="value" id="excTons">0</span></div>
+                        <div class="output-row highlight"><span class="label">Days</span><span class="value" id="excDays">0</span></div>
+                        <div class="output-row"><span class="label">Trucks Req'd</span><span class="value" id="excTrucks">0</span></div>
+                        <div class="output-row"><span class="label">Truck Hours</span><span class="value" id="excTruckHrs">0</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fine Grading -->
+            <div class="section-card">
+                <div class="section-header purple">Fine Grading</div>
+                <div class="section-body">
+                    <div class="input-group">
+                        <label>Area (SY)</label>
+                        <input type="number" id="fineGradingArea" placeholder="0" oninput="autoCalcCheck()">
+                    </div>
+                    <div class="input-group">
+                        <label>SY/day Rate</label>
+                        <div class="hint">Parking lot: 2,000-5,000</div>
+                        <select id="fineGradingRate" onchange="autoCalcCheck()">
+                            <option value="0">-- Select --</option>
+                            <option value="1500">1500 - Complex</option>
+                            <option value="2000">2000</option>
+                            <option value="2500">2500</option>
+                            <option value="3000">3000 - Standard</option>
+                            <option value="3500">3500</option>
+                            <option value="4000">4000</option>
+                            <option value="5000">5000 - Simple</option>
+                        </select>
+                    </div>
+                    <div style="height: 132px;"></div>
+                </div>
+                <div class="output-card">
+                    <div class="output-header" style="color: var(--accent-purple);">Output</div>
+                    <div class="output-body">
+                        <div class="output-row highlight"><span class="label">Days</span><span class="value" id="fgDays">0</span></div>
+                        <div class="output-row"><span class="label">Note</span><span class="value" style="font-size: 0.65rem; color: var(--text-muted);">Equip in Heavybid</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DGA -->
+            <div class="section-card">
+                <div class="section-header yellow">DGA Base</div>
+                <div class="section-body">
+                    <div class="input-group">
+                        <label>Area (SY)</label>
+                        <input type="number" id="dgaArea" placeholder="0" oninput="autoCalcCheck()">
+                    </div>
+                    <div class="input-group">
+                        <label>Depth (inches)</label>
+                        <input type="number" id="dgaDepth" placeholder="0" oninput="autoCalcCheck()">
+                    </div>
+                    <div class="input-group">
+                        <label>Cycle Time (min)</label>
+                        <div class="hint">Round-trip + load/unload</div>
+                        <input type="number" id="dgaCycle" placeholder="0" oninput="autoCalcCheck()">
+                    </div>
+                    <div class="input-group">
+                        <label>CY/day Rate</label>
+                        <div class="hint">Parking lot: 250-550</div>
+                        <select id="dgaRate" onchange="autoCalcCheck()">
+                            <option value="0">-- Select --</option>
+                            <option value="200">200 - Complex</option>
+                            <option value="300">300</option>
+                            <option value="400">400 - Standard</option>
+                            <option value="500">500</option>
+                            <option value="600">600</option>
+                            <option value="700">700 - Simple</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="output-card">
+                    <div class="output-header" style="color: var(--accent-yellow);">Output</div>
+                    <div class="output-body">
+                        <div class="output-row"><span class="label">Volume (CY)</span><span class="value" id="dgaCY">0</span></div>
+                        <div class="output-row"><span class="label">Tons</span><span class="value" id="dgaTons">0</span></div>
+                        <div class="output-row"><span class="label">+ Waste</span><span class="value" id="dgaTonsWaste">0</span></div>
+                        <div class="output-row highlight"><span class="label">Days</span><span class="value" id="dgaDays">0</span></div>
+                        <div class="output-row"><span class="label">Trucks Req'd</span><span class="value" id="dgaTrucks">0</span></div>
+                        <div class="output-row"><span class="label">Truck Hours</span><span class="value" id="dgaTruckHrs">0</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Milling -->
+            <div class="section-card">
+                <div class="section-header pink">Milling</div>
+                <div class="section-body">
+                    <div class="input-group">
+                        <label>Area (SY)</label>
+                        <input type="number" id="millingArea" placeholder="0" oninput="autoCalcCheck()">
+                    </div>
+                    <div class="input-group">
+                        <label>Depth (inches)</label>
+                        <input type="number" id="millingDepth" placeholder="0" oninput="autoCalcCheck()">
+                    </div>
+                    <div class="input-group">
+                        <label>Cycle Time (min)</label>
+                        <div class="hint">Round-trip + load/unload</div>
+                        <input type="number" id="millingCycle" placeholder="0" oninput="autoCalcCheck()">
+                    </div>
+                    <div class="input-group">
+                        <label>SY/day Rate</label>
+                        <div class="hint">DOT: 8,000-20,000 | Lot: 2,500-6,000</div>
+                        <select id="millingRate" onchange="autoCalcCheck()">
+                            <option value="0">-- Select --</option>
+                            <option value="2000">2000 - Complex lot</option>
+                            <option value="3000">3000</option>
+                            <option value="4000">4000 - Standard lot</option>
+                            <option value="5000">5000</option>
+                            <option value="6000">6000 - Simple lot</option>
+                            <option value="8000">8000 - DOT min</option>
+                            <option value="10000">10000</option>
+                            <option value="14000">14000 - DOT typical</option>
+                            <option value="17000">17000 - DOT thin mill</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="output-card">
+                    <div class="output-header" style="color: var(--accent-pink);">Output</div>
+                    <div class="output-body">
+                        <div class="output-row"><span class="label">RAP Tons</span><span class="value" id="millTons">0</span></div>
+                        <div class="output-row highlight"><span class="label">Days</span><span class="value" id="millDays">0</span></div>
+                        <div class="output-row"><span class="label">Trucks Req'd</span><span class="value" id="millTrucks">0</span></div>
+                        <div class="output-row"><span class="label">Truck Hours</span><span class="value" id="millTruckHrs">0</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Base Course -->
+            <div class="section-card">
+                <div class="section-header blue">19mm Base</div>
+                <div class="section-body">
+                    <div class="input-group">
+                        <label>Area (SY)</label>
+                        <input type="number" id="baseArea" placeholder="0" oninput="autoCalcCheck()">
+                    </div>
+                    <div class="input-group">
+                        <label>Depth (inches)</label>
+                        <input type="number" id="baseDepth" placeholder="0" oninput="autoCalcCheck()">
+                    </div>
+                    <div class="input-group">
+                        <label>Cycle Time (min)</label>
+                        <div class="hint">Round-trip + load/unload</div>
+                        <input type="number" id="baseCycle" placeholder="0" oninput="autoCalcCheck()">
+                    </div>
+                    <div class="input-group">
+                        <label>SY/day Rate</label>
+                        <div class="hint">Parking lot: 1,800-4,500</div>
+                        <select id="baseRate" onchange="autoCalcCheck()">
+                            <option value="0">-- Select --</option>
+                            <option value="1500">1500 - Complex</option>
+                            <option value="2000">2000</option>
+                            <option value="2500">2500</option>
+                            <option value="3000">3000 - Standard</option>
+                            <option value="3500">3500</option>
+                            <option value="4000">4000</option>
+                            <option value="4500">4500 - Simple</option>
+                            <option value="5000">5000</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="output-card">
+                    <div class="output-header" style="color: var(--accent-blue);">Output</div>
+                    <div class="output-body">
+                        <div class="output-row"><span class="label">Tons</span><span class="value" id="baseTons">0</span></div>
+                        <div class="output-row"><span class="label">+ Waste</span><span class="value" id="baseTonsWaste">0</span></div>
+                        <div class="output-row highlight"><span class="label">Days</span><span class="value" id="baseDays">0</span></div>
+                        <div class="output-row"><span class="label">Trucks Req'd</span><span class="value" id="baseTrucks">0</span></div>
+                        <div class="output-row"><span class="label">Truck Hours</span><span class="value" id="baseTruckHrs">0</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Surface Course -->
+            <div class="section-card">
+                <div class="section-header green">9.5mm Surface</div>
+                <div class="section-body">
+                    <div class="input-group">
+                        <label>Area (SY)</label>
+                        <input type="number" id="surfaceArea" placeholder="0" oninput="autoCalcCheck()">
+                    </div>
+                    <div class="input-group">
+                        <label>Depth (inches)</label>
+                        <input type="number" id="surfaceDepth" placeholder="0" oninput="autoCalcCheck()">
+                    </div>
+                    <div class="input-group">
+                        <label>Cycle Time (min)</label>
+                        <div class="hint">Round-trip + load/unload</div>
+                        <input type="number" id="surfaceCycle" placeholder="0" oninput="autoCalcCheck()">
+                    </div>
+                    <div class="input-group">
+                        <label>SY/day Rate</label>
+                        <div class="hint">Parking lot: 2,000-5,000</div>
+                        <select id="surfaceRate" onchange="autoCalcCheck()">
+                            <option value="0">-- Select --</option>
+                            <option value="1500">1500 - Complex</option>
+                            <option value="2000">2000</option>
+                            <option value="2500">2500</option>
+                            <option value="3000">3000 - Standard</option>
+                            <option value="3500">3500</option>
+                            <option value="4000">4000</option>
+                            <option value="5000">5000 - Simple</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="output-card">
+                    <div class="output-header" style="color: var(--accent-green);">Output</div>
+                    <div class="output-body">
+                        <div class="output-row"><span class="label">Tons</span><span class="value" id="surfTons">0</span></div>
+                        <div class="output-row"><span class="label">+ Waste</span><span class="value" id="surfTonsWaste">0</span></div>
+                        <div class="output-row highlight"><span class="label">Days</span><span class="value" id="surfDays">0</span></div>
+                        <div class="output-row"><span class="label">Trucks Req'd</span><span class="value" id="surfTrucks">0</span></div>
+                        <div class="output-row"><span class="label">Truck Hours</span><span class="value" id="surfTruckHrs">0</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Project Summary -->
+        <div class="summary-section">
+            <div class="summary-header">
+                <h2>📊 Project Summary</h2>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Totals across all phases</span>
+            </div>
+            <div class="summary-grid">
+                <div class="summary-stat">
+                    <div class="label">Total Days</div>
+                    <div class="value"><span id="totalDays">0</span><span class="unit">days</span></div>
+                </div>
+                <div class="summary-stat">
+                    <div class="label">Total Truck Hours</div>
+                    <div class="value"><span id="totalTruckHrs">0</span><span class="unit">hrs</span></div>
+                </div>
+                <div class="summary-stat">
+                    <div class="label">Total HMA Tons</div>
+                    <div class="value"><span id="totalHMA">0</span><span class="unit">tons</span></div>
+                </div>
+                <div class="summary-stat">
+                    <div class="label">DGA Tons</div>
+                    <div class="value"><span id="totalDGA">0</span><span class="unit">tons</span></div>
+                </div>
+                <div class="summary-stat">
+                    <div class="label">Excavation CY</div>
+                    <div class="value"><span id="totalExcCY">0</span><span class="unit">CY</span></div>
+                </div>
+                <div class="summary-stat">
+                    <div class="label">RAP Generated</div>
+                    <div class="value"><span id="totalRAP">0</span><span class="unit">tons</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reference Section -->
+        <div class="reference-section">
+            <button class="reference-toggle" onclick="toggleReference(this)">
+                <span>📚 Reference Tables & Source Documentation</span>
+                <span class="arrow">▼</span>
+            </button>
+            <div class="reference-content" id="referenceContent">
+                <div class="reference-grid">
+                    <div class="reference-card">
+                        <h3>Material Densities</h3>
+                        <table>
+                            <tr><th>Material</th><th>Density</th><th>Source</th></tr>
+                            <tr><td>HMA (compacted)</td><td>145 lbs/ft³</td><td>Asphalt Institute</td></tr>
+                            <tr><td>DGA (compacted)</td><td>1.9 tons/CY</td><td>Industry std</td></tr>
+                            <tr><td>RAP (loose)</td><td>130 lbs/ft³</td><td>FHWA</td></tr>
+                            <tr><td>Excavated soil</td><td>1.5 tons/CY</td><td>Caterpillar</td></tr>
+                        </table>
+                        <h4>Asphalt Tonnage Formula</h4>
+                        <p style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                            Tons = Area(SY) × Depth(in) × 0.0575<br>
+                            <span style="color: var(--text-muted);">Derived from: 145 lbs/ft³ ÷ 27 ÷ 12 × 9</span>
+                        </p>
+                        <h4>Volume Formula</h4>
+                        <p style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                            CY = Area(SY) × Depth(in) ÷ 324<br>
+                            <span style="color: var(--text-muted);">324 = 9 ft²/SY × 36 in/yd</span>
+                        </p>
+                    </div>
+
+                    <div class="reference-card">
+                        <h3>Production Rates <span class="source-tag">WisDOT 2022</span></h3>
+                        <table>
+                            <tr><th>Activity</th><th>DOT Range</th><th>Typical</th></tr>
+                            <tr><td>Excavation (truck)</td><td>250-1,300 CY/day</td><td>600</td></tr>
+                            <tr><td>HMA Paving</td><td>700-1,800 tons/day</td><td>1,300</td></tr>
+                            <tr><td>Milling (thin &lt;2")</td><td>8,500-25,000 SY/day</td><td>17,000</td></tr>
+                            <tr><td>Milling (thick 2"+)</td><td>8,000-20,000 SY/day</td><td>14,000</td></tr>
+                            <tr><td>Base course</td><td>350-1,300 tons/day</td><td>700</td></tr>
+                        </table>
+                        <h4>Parking Lot Modifiers</h4>
+                        <ul>
+                            <li><strong>Simple (0.85×)</strong>: Large retail, minimal obstacles</li>
+                            <li><strong>Standard (0.70×)</strong>: Typical commercial</li>
+                            <li><strong>Complex (0.55×)</strong>: Dense obstacles, extensive hand work</li>
+                        </ul>
+                    </div>
+
+                    <div class="reference-card">
+                        <h3>Trucking Standards</h3>
+                        <table>
+                            <tr><th>Truck Type</th><th>Volume</th><th>Weight</th></tr>
+                            <tr><td>Tri-axle (dirt/DGA)</td><td>15-16 CY</td><td>22 tons max</td></tr>
+                            <tr><td>Tri-axle (HMA)</td><td>—</td><td>22 tons</td></tr>
+                            <tr><td>Tandem</td><td>10-14 CY</td><td>12-16 tons</td></tr>
+                        </table>
+                        <h4>Fleet Calculation</h4>
+                        <p style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                            Loads/day = Daily output ÷ truck capacity<br>
+                            Trucks = (Loads × Cycle time) ÷ 480 min<br>
+                            Truck hrs = Trucks × Days × 8 hrs
+                        </p>
+                    </div>
+
+                    <div class="reference-card">
+                        <h3>Adjustment Factors</h3>
+                        <h4>Excavation Swell <span class="source-tag">Caterpillar</span></h4>
+                        <table>
+                            <tr><th>Soil Type</th><th>Swell %</th></tr>
+                            <tr><td>Sand/Gravel</td><td>10-15%</td></tr>
+                            <tr><td>Common earth</td><td>20-30%</td></tr>
+                            <tr><td>Clay</td><td>30-40%</td></tr>
+                        </table>
+                        <h4>Waste Factors</h4>
+                        <ul>
+                            <li>Asphalt: 5-10% (7% typical)</li>
+                            <li>Aggregate: 5-10% (7% typical)</li>
+                        </ul>
+                        <h4>Trucking Efficiency</h4>
+                        <ul>
+                            <li>Ideal conditions: 100%</li>
+                            <li>Standard: 85-90%</li>
+                            <li>Plant delays/queuing: reduce 10-15%</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Paving Estimating Calculator v2.0 • Formulas validated against DOT standards and industry sources</p>
+            <p style="margin-top: 0.5rem;">Sources: Wisconsin DOT (2022), Asphalt Institute, FHWA, Caterpillar Equipment Handbook</p>
+        </footer>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">Results copied to clipboard!</div>
+
+    <script>
+        // Constants based on research
+        const CONSTANTS = {
+            HMA_DENSITY: 145,           // lbs/ft³ - Asphalt Institute
+            DGA_DENSITY: 1.9,           // tons/CY compacted
+            SOIL_DENSITY: 1.5,          // tons/CY
+            RAP_DENSITY: 130,           // lbs/ft³ loose
+            TRUCK_CY: 16,               // CY capacity for dirt/DGA
+            TRUCK_TONS: 22,             // tons capacity for HMA
+            WORKDAY_MINUTES: 480,       // 8 hour day
+            HMA_FACTOR: 0.0575          // SY × inches × factor = tons
+        };
+
+        // Utility functions
+        function getVal(id) {
+            return parseFloat(document.getElementById(id).value) || 0;
+        }
+
+        function setVal(id, val) {
+            document.getElementById(id).textContent = val;
+        }
+
+        function roundHalf(val) {
+            return Math.ceil(val * 2) / 2;
+        }
+
+        function roundUp(val, precision = 1) {
+            return Math.ceil(val / precision) * precision;
+        }
+
+        function convertSfToSy() {
+            const sf = getVal('sqFeetInput');
+            document.getElementById('sqYardsResult').value = sf ? (sf / 9).toFixed(2) : '0';
+        }
+
+        function autoCalcCheck() {
+            if (document.getElementById('autoCalc').checked) {
+                calculateAll();
+            }
+        }
+
+        function toggleReference(btn) {
+            btn.classList.toggle('open');
+            document.getElementById('referenceContent').classList.toggle('open');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // Main calculation function
+        function calculateAll() {
+            const complexity = getVal('complexityModifier');
+            const asphaltWaste = getVal('asphaltWaste');
+            const aggregateWaste = getVal('aggregateWaste');
+            const swellFactor = getVal('swellFactor');
+            const truckEfficiency = getVal('truckingEfficiency');
+
+            let totalDays = 0;
+            let totalTruckHrs = 0;
+            let totalHMA = 0;
+            let totalDGA = 0;
+            let totalExcCY = 0;
+            let totalRAP = 0;
+
+            // === EXCAVATION ===
+            const excArea = getVal('excavationArea');
+            const excDepth = getVal('excavationDepth');
+            const excCycle = getVal('excavationCycle');
+            const excRate = getVal('excavationRate');
+
+            const excBankCY = excArea && excDepth ? roundUp(excArea * excDepth / 324) : 0;
+            const excLooseCY = roundUp(excBankCY * swellFactor);
+            const excTons = roundUp(excBankCY * CONSTANTS.SOIL_DENSITY);
+            const excDays = excBankCY && excRate ? roundHalf(excBankCY / (excRate * complexity)) : 0;
+            const excDailyVol = excDays > 0 ? excLooseCY / excDays : 0;
+            const excLoadsDay = excDailyVol / CONSTANTS.TRUCK_CY;
+            const excTrucks = excLoadsDay && excCycle ? Math.ceil((excLoadsDay * excCycle) / (CONSTANTS.WORKDAY_MINUTES * truckEfficiency)) : 0;
+            const excTruckHrs = roundUp(excTrucks * excDays * 8);
+
+            setVal('excBankCY', excBankCY);
+            setVal('excLooseCY', excLooseCY);
+            setVal('excTons', excTons);
+            setVal('excDays', excDays);
+            setVal('excTrucks', excTrucks);
+            setVal('excTruckHrs', excTruckHrs);
+
+            totalDays += excDays;
+            totalTruckHrs += excTruckHrs;
+            totalExcCY = excBankCY;
+
+            // === FINE GRADING ===
+            const fgArea = getVal('fineGradingArea');
+            const fgRate = getVal('fineGradingRate');
+            const fgDays = fgArea && fgRate ? roundHalf(fgArea / (fgRate * complexity)) : 0;
+
+            setVal('fgDays', fgDays);
+            totalDays += fgDays;
+
+            // === DGA ===
+            const dgaArea = getVal('dgaArea');
+            const dgaDepth = getVal('dgaDepth');
+            const dgaCycle = getVal('dgaCycle');
+            const dgaRate = getVal('dgaRate');
+
+            const dgaCY = dgaArea && dgaDepth ? roundUp(dgaArea * dgaDepth / 324) : 0;
+            const dgaTons = roundUp(dgaCY * CONSTANTS.DGA_DENSITY);
+            const dgaTonsWaste = roundUp(dgaTons * aggregateWaste);
+            const dgaDays = dgaCY && dgaRate ? roundHalf(dgaCY / (dgaRate * complexity)) : 0;
+            const dgaDailyVol = dgaDays > 0 ? dgaCY / dgaDays : 0;
+            const dgaLoadsDay = dgaDailyVol / CONSTANTS.TRUCK_CY;
+            const dgaTrucks = dgaLoadsDay && dgaCycle ? Math.ceil((dgaLoadsDay * dgaCycle) / (CONSTANTS.WORKDAY_MINUTES * truckEfficiency)) : 0;
+            const dgaTruckHrs = roundUp(dgaTrucks * dgaDays * 8);
+
+            setVal('dgaCY', dgaCY);
+            setVal('dgaTons', dgaTons);
+            setVal('dgaTonsWaste', dgaTonsWaste);
+            setVal('dgaDays', dgaDays);
+            setVal('dgaTrucks', dgaTrucks);
+            setVal('dgaTruckHrs', dgaTruckHrs);
+
+            totalDays += dgaDays;
+            totalTruckHrs += dgaTruckHrs;
+            totalDGA = dgaTonsWaste;
+
+            // === MILLING ===
+            const millArea = getVal('millingArea');
+            const millDepth = getVal('millingDepth');
+            const millCycle = getVal('millingCycle');
+            const millRate = getVal('millingRate');
+
+            // RAP tons: Area(SY) × Depth(in) × 130 lbs/ft³ converted properly
+            // SY to ft² = ×9, inches to ft = ÷12, lbs to tons = ÷2000
+            // = Area × 9 × Depth/12 × 130 / 2000
+            // = Area × Depth × 9 × 130 / 12 / 2000
+            // = Area × Depth × 0.04875
+            const millTons = millArea && millDepth ? roundUp(millArea * millDepth * 0.04875) : 0;
+            const millDays = millArea && millRate ? roundHalf(millArea / (millRate * complexity)) : 0;
+            const millDailyTons = millDays > 0 ? millTons / millDays : 0;
+            const millLoadsDay = millDailyTons / CONSTANTS.TRUCK_TONS;
+            const millTrucks = millLoadsDay && millCycle ? Math.ceil((millLoadsDay * millCycle) / (CONSTANTS.WORKDAY_MINUTES * truckEfficiency)) : 0;
+            const millTruckHrs = roundUp(millTrucks * millDays * 8);
+
+            setVal('millTons', millTons);
+            setVal('millDays', millDays);
+            setVal('millTrucks', millTrucks);
+            setVal('millTruckHrs', millTruckHrs);
+
+            totalDays += millDays;
+            totalTruckHrs += millTruckHrs;
+            totalRAP = millTons;
+
+            // === BASE COURSE ===
+            const baseArea = getVal('baseArea');
+            const baseDepth = getVal('baseDepth');
+            const baseCycle = getVal('baseCycle');
+            const baseRate = getVal('baseRate');
+
+            const baseTons = baseArea && baseDepth ? roundUp(baseArea * baseDepth * CONSTANTS.HMA_FACTOR) : 0;
+            const baseTonsWaste = roundUp(baseTons * asphaltWaste);
+            const baseDays = baseArea && baseRate ? roundHalf(baseArea / (baseRate * complexity)) : 0;
+            const baseDailyTons = baseDays > 0 ? baseTonsWaste / baseDays : 0;
+            const baseLoadsDay = baseDailyTons / CONSTANTS.TRUCK_TONS;
+            const baseTrucks = baseLoadsDay && baseCycle ? Math.ceil((baseLoadsDay * baseCycle) / (CONSTANTS.WORKDAY_MINUTES * truckEfficiency)) : 0;
+            const baseTruckHrs = roundUp(baseTrucks * baseDays * 8);
+
+            setVal('baseTons', baseTons);
+            setVal('baseTonsWaste', baseTonsWaste);
+            setVal('baseDays', baseDays);
+            setVal('baseTrucks', baseTrucks);
+            setVal('baseTruckHrs', baseTruckHrs);
+
+            totalDays += baseDays;
+            totalTruckHrs += baseTruckHrs;
+            totalHMA += baseTonsWaste;
+
+            // === SURFACE COURSE ===
+            const surfArea = getVal('surfaceArea');
+            const surfDepth = getVal('surfaceDepth');
+            const surfCycle = getVal('surfaceCycle');
+            const surfRate = getVal('surfaceRate');
+
+            const surfTons = surfArea && surfDepth ? roundUp(surfArea * surfDepth * CONSTANTS.HMA_FACTOR) : 0;
+            const surfTonsWaste = roundUp(surfTons * asphaltWaste);
+            const surfDays = surfArea && surfRate ? roundHalf(surfArea / (surfRate * complexity)) : 0;
+            const surfDailyTons = surfDays > 0 ? surfTonsWaste / surfDays : 0;
+            const surfLoadsDay = surfDailyTons / CONSTANTS.TRUCK_TONS;
+            const surfTrucks = surfLoadsDay && surfCycle ? Math.ceil((surfLoadsDay * surfCycle) / (CONSTANTS.WORKDAY_MINUTES * truckEfficiency)) : 0;
+            const surfTruckHrs = roundUp(surfTrucks * surfDays * 8);
+
+            setVal('surfTons', surfTons);
+            setVal('surfTonsWaste', surfTonsWaste);
+            setVal('surfDays', surfDays);
+            setVal('surfTrucks', surfTrucks);
+            setVal('surfTruckHrs', surfTruckHrs);
+
+            totalDays += surfDays;
+            totalTruckHrs += surfTruckHrs;
+            totalHMA += surfTonsWaste;
+
+            // === SUMMARY ===
+            setVal('totalDays', totalDays);
+            setVal('totalTruckHrs', totalTruckHrs);
+            setVal('totalHMA', totalHMA);
+            setVal('totalDGA', totalDGA);
+            setVal('totalExcCY', totalExcCY);
+            setVal('totalRAP', totalRAP);
+        }
+
+        function resetForm() {
+            // Reset all inputs
+            document.querySelectorAll('input[type="number"]').forEach(input => {
+                if (!input.readOnly) input.value = '';
+            });
+            document.querySelectorAll('select').forEach(select => {
+                if (!select.id.includes('Modifier') && !select.id.includes('Waste') && 
+                    !select.id.includes('Swell') && !select.id.includes('Efficiency')) {
+                    select.selectedIndex = 0;
+                }
+            });
+
+            // Reset outputs
+            const outputs = ['excBankCY', 'excLooseCY', 'excTons', 'excDays', 'excTrucks', 'excTruckHrs',
+                           'fgDays', 'dgaCY', 'dgaTons', 'dgaTonsWaste', 'dgaDays', 'dgaTrucks', 'dgaTruckHrs',
+                           'millTons', 'millDays', 'millTrucks', 'millTruckHrs',
+                           'baseTons', 'baseTonsWaste', 'baseDays', 'baseTrucks', 'baseTruckHrs',
+                           'surfTons', 'surfTonsWaste', 'surfDays', 'surfTrucks', 'surfTruckHrs',
+                           'totalDays', 'totalTruckHrs', 'totalHMA', 'totalDGA', 'totalExcCY', 'totalRAP'];
+            outputs.forEach(id => setVal(id, '0'));
+
+            document.getElementById('sqFeetInput').value = '';
+            document.getElementById('sqYardsResult').value = '0';
+        }
+
+        function exportResults() {
+            const results = `PAVING ESTIMATE SUMMARY
+Generated: ${new Date().toLocaleString()}
+=====================================
+
+EXCAVATION
+  Bank CY: ${document.getElementById('excBankCY').textContent}
+  Loose CY: ${document.getElementById('excLooseCY').textContent}
+  Tons: ${document.getElementById('excTons').textContent}
+  Days: ${document.getElementById('excDays').textContent}
+  Trucks: ${document.getElementById('excTrucks').textContent}
+  Truck Hours: ${document.getElementById('excTruckHrs').textContent}
+
+FINE GRADING
+  Days: ${document.getElementById('fgDays').textContent}
+
+DGA BASE
+  CY: ${document.getElementById('dgaCY').textContent}
+  Tons: ${document.getElementById('dgaTons').textContent}
+  Tons w/Waste: ${document.getElementById('dgaTonsWaste').textContent}
+  Days: ${document.getElementById('dgaDays').textContent}
+  Trucks: ${document.getElementById('dgaTrucks').textContent}
+  Truck Hours: ${document.getElementById('dgaTruckHrs').textContent}
+
+MILLING
+  RAP Tons: ${document.getElementById('millTons').textContent}
+  Days: ${document.getElementById('millDays').textContent}
+  Trucks: ${document.getElementById('millTrucks').textContent}
+  Truck Hours: ${document.getElementById('millTruckHrs').textContent}
+
+19mm BASE COURSE
+  Tons: ${document.getElementById('baseTons').textContent}
+  Tons w/Waste: ${document.getElementById('baseTonsWaste').textContent}
+  Days: ${document.getElementById('baseDays').textContent}
+  Trucks: ${document.getElementById('baseTrucks').textContent}
+  Truck Hours: ${document.getElementById('baseTruckHrs').textContent}
+
+9.5mm SURFACE COURSE
+  Tons: ${document.getElementById('surfTons').textContent}
+  Tons w/Waste: ${document.getElementById('surfTonsWaste').textContent}
+  Days: ${document.getElementById('surfDays').textContent}
+  Trucks: ${document.getElementById('surfTrucks').textContent}
+  Truck Hours: ${document.getElementById('surfTruckHrs').textContent}
+
+=====================================
+PROJECT TOTALS
+  Total Days: ${document.getElementById('totalDays').textContent}
+  Total Truck Hours: ${document.getElementById('totalTruckHrs').textContent}
+  Total HMA Tons: ${document.getElementById('totalHMA').textContent}
+  Total DGA Tons: ${document.getElementById('totalDGA').textContent}
+  Total Excavation CY: ${document.getElementById('totalExcCY').textContent}
+  Total RAP Generated: ${document.getElementById('totalRAP').textContent}
+=====================================`;
+
+            navigator.clipboard.writeText(results).then(() => {
+                showToast('Results copied to clipboard!');
+            }).catch(() => {
+                // Fallback for older browsers
+                const textarea = document.createElement('textarea');
+                textarea.value = results;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showToast('Results copied to clipboard!');
+            });
+        }
+    </script>
+</body>
+</html>
