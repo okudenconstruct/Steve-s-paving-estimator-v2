@@ -1,0 +1,322 @@
+// ============================================
+// Paving Trade Defaults
+// Default resources, crews, production rates, activities, WBS, and dependencies
+// All values are data (not code) per Tier 6.4
+// ============================================
+
+import { Resource, ResourceType, SourceRank } from '../models/Resource.js';
+import { ProductionRate } from '../models/ProductionRate.js';
+import { Crew } from '../models/Crew.js';
+import { ProductivityFactor } from '../models/ProductivityFactor.js';
+import { Quantity } from '../models/Quantity.js';
+import { Activity, DependencyType, DependencySource } from '../models/Activity.js';
+import { WorkPackage } from '../models/WorkPackage.js';
+import { RiskItem, RiskType } from '../models/RiskRegister.js';
+import { CONSTANTS } from './constants.js';
+
+// ============================================
+// PRODUCTION RATE OPTIONS
+// Dropdown values matching current app
+// ============================================
+
+export const RATE_OPTIONS = {
+    excavation: [50, 100, 150, 200, 300, 400, 500, 600, 800, 1000, 1300, 1500, 2000],
+    fine_grading: [500, 750, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 5000, 6000, 8000],
+    dga_base: [50, 100, 150, 200, 300, 400, 500, 600, 700, 800, 1000, 1200],
+    milling: [500, 1000, 1500, 2000, 3000, 4000, 5000, 6000, 8000, 10000, 14000, 18000, 25000],
+    paving_base: [500, 750, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 6000, 8000],
+    paving_surface: [500, 750, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 5000, 6000, 8000]
+};
+
+// ============================================
+// CREW SIZE OPTIONS
+// Dropdown values matching current app
+// ============================================
+
+export const CREW_SIZE_OPTIONS = {
+    excavation: [1, 2, 3, 4, 5, 6, 8, 10],
+    fine_grading: [1, 2, 3, 4, 5, 6],
+    dga_base: [1, 2, 3, 4, 5, 6, 8, 10],
+    milling: [2, 3, 4, 5, 6, 8, 10],
+    paving_base: [2, 3, 4, 5, 6, 8, 10, 12],
+    paving_surface: [2, 3, 4, 5, 6, 8, 10, 12]
+};
+
+export const DEFAULT_CREW_SIZES = {
+    excavation: 3,
+    fine_grading: 2,
+    dga_base: 3,
+    milling: 4,
+    paving_base: 6,
+    paving_surface: 6
+};
+
+// ============================================
+// WASTE FACTOR OPTIONS
+// ============================================
+
+export const WASTE_FACTOR_OPTIONS = {
+    asphalt: [
+        { value: 1.05, label: '5%' },
+        { value: 1.07, label: '7%' },
+        { value: 1.10, label: '10%' }
+    ],
+    aggregate: [
+        { value: 1.05, label: '5%' },
+        { value: 1.07, label: '7%' },
+        { value: 1.10, label: '10%' }
+    ]
+};
+
+export const SWELL_FACTOR_OPTIONS = [
+    { value: 1.15, label: '15%' },
+    { value: 1.25, label: '25%' },
+    { value: 1.35, label: '35%' }
+];
+
+export const EFFICIENCY_OPTIONS = [
+    { value: 1.00, label: '100%' },
+    { value: 0.90, label: '90%' },
+    { value: 0.85, label: '85%' }
+];
+
+// ============================================
+// DEFAULT PAVING DEPENDENCIES
+// Standard paving sequence (Tier 3.1)
+// ============================================
+
+export const DEFAULT_DEPENDENCIES = {
+    'FG-001': [
+        { predecessorId: 'EXC-001', type: DependencyType.FS, lag: 0, source: DependencySource.PHYSICAL }
+    ],
+    'DGA-001': [
+        { predecessorId: 'FG-001', type: DependencyType.FS, lag: 0, source: DependencySource.PHYSICAL }
+    ],
+    'PAVE-001': [
+        { predecessorId: 'DGA-001', type: DependencyType.FS, lag: 0, source: DependencySource.PHYSICAL },
+        { predecessorId: 'MILL-001', type: DependencyType.FS, lag: 0, source: DependencySource.PHYSICAL }
+    ],
+    'TACK-001': [
+        { predecessorId: 'PAVE-001', type: DependencyType.FS, lag: 0, source: DependencySource.PHYSICAL }
+    ],
+    'PAVE-002': [
+        { predecessorId: 'TACK-001', type: DependencyType.FS, lag: 0, source: DependencySource.PHYSICAL }
+    ]
+};
+
+// ============================================
+// DEFAULT WBS STRUCTURE
+// ============================================
+
+export const DEFAULT_WBS = [
+    {
+        id: 'WP-EARTH',
+        name: 'Earthwork',
+        wbsCode: '01',
+        activityIds: ['EXC-001', 'FG-001'],
+        inclusions: ['Removal of existing subgrade material', 'Fine grading to design elevations'],
+        exclusions: ['Rock excavation', 'Dewatering', 'Erosion control'],
+        interfaces: ['Grading follows excavation; DGA follows grading'],
+        assumptions: ['Common earth — no rock', 'Dry conditions', 'Material disposed off-site']
+    },
+    {
+        id: 'WP-AGG',
+        name: 'Aggregate Base',
+        wbsCode: '02',
+        activityIds: ['DGA-001'],
+        inclusions: ['DGA base placement and compaction'],
+        exclusions: ['Geotextile fabric', 'Underdrain'],
+        interfaces: ['Follows earthwork; precedes paving'],
+        assumptions: ['Material from local quarry', 'Compaction to 95% standard Proctor']
+    },
+    {
+        id: 'WP-MILL',
+        name: 'Milling',
+        wbsCode: '03',
+        activityIds: ['MILL-001'],
+        inclusions: ['Cold milling of existing asphalt surface'],
+        exclusions: ['Full-depth removal', 'Concrete removal'],
+        interfaces: ['Independent of earthwork chain; precedes paving'],
+        assumptions: ['RAP hauled to designated stockpile', 'Milling depth as specified']
+    },
+    {
+        id: 'WP-PAVE',
+        name: 'Asphalt Paving',
+        wbsCode: '04',
+        activityIds: ['PAVE-001', 'TACK-001', 'PAVE-002'],
+        inclusions: ['Base course paving', 'Tack coat application', 'Surface course paving'],
+        exclusions: ['Pavement markings', 'Curb and gutter'],
+        interfaces: ['Follows milling and aggregate base; final scope item'],
+        assumptions: ['HMA from approved plant within cycle time distance', 'Minimum paving temperature met']
+    }
+];
+
+// ============================================
+// ACTIVITY CONFIGURATION MAP
+// Maps activity type keys to their properties
+// ============================================
+
+export const ACTIVITY_CONFIG = {
+    excavation: {
+        id: 'EXC-001',
+        description: 'Excavation',
+        wbsCode: '01.01',
+        colorClass: 'red',
+        quantityUOM: 'CY',
+        rateUOM: 'CY',
+        hasDepth: true,
+        hasCycleTime: true,
+        hasMaterial: false,
+        truckCapacity: CONSTANTS.TRUCK_CY,
+        truckCapacityUOM: 'CY',
+        quantityCalc: (area, depth, wasteFactor, swellFactor) => {
+            const bankCY = area && depth ? Math.ceil(area * depth / 324) : 0;
+            const looseCY = Math.ceil(bankCY * swellFactor);
+            const tons = Math.ceil(bankCY * CONSTANTS.SOIL_DENSITY);
+            return { netQuantity: bankCY, looseCY, tons, uomId: 'CY' };
+        },
+        // For trucking, use loose CY (what actually goes on the truck)
+        truckingQuantityKey: 'looseCY'
+    },
+    fine_grading: {
+        id: 'FG-001',
+        description: 'Fine Grading',
+        wbsCode: '01.02',
+        colorClass: 'purple',
+        quantityUOM: 'SY',
+        rateUOM: 'SY',
+        hasDepth: false,
+        hasCycleTime: false,
+        hasMaterial: false,
+        quantityCalc: (area) => {
+            return { netQuantity: area || 0, uomId: 'SY' };
+        }
+    },
+    dga_base: {
+        id: 'DGA-001',
+        description: 'DGA Base',
+        wbsCode: '02.01',
+        colorClass: 'yellow',
+        quantityUOM: 'CY',
+        rateUOM: 'CY',
+        hasDepth: true,
+        hasCycleTime: true,
+        hasMaterial: true,
+        materialId: 'M-003',
+        truckCapacity: CONSTANTS.TRUCK_CY,
+        truckCapacityUOM: 'CY',
+        quantityCalc: (area, depth, wasteFactor) => {
+            const cy = area && depth ? Math.ceil(area * depth / 324) : 0;
+            const tons = Math.ceil(cy * CONSTANTS.DGA_DENSITY);
+            const tonsWithWaste = Math.ceil(tons * wasteFactor);
+            return { netQuantity: cy, tons, tonsWithWaste, uomId: 'CY', wasteFactor };
+        },
+        truckingQuantityKey: 'netQuantity'
+    },
+    milling: {
+        id: 'MILL-001',
+        description: 'Milling',
+        wbsCode: '03.01',
+        colorClass: 'pink',
+        quantityUOM: 'SY',
+        rateUOM: 'SY',
+        hasDepth: true,
+        hasCycleTime: true,
+        hasMaterial: false,
+        truckCapacity: CONSTANTS.TRUCK_TONS,
+        truckCapacityUOM: 'TON',
+        quantityCalc: (area, depth) => {
+            const rapTons = area && depth ? Math.ceil(area * depth * CONSTANTS.RAP_FACTOR) : 0;
+            return { netQuantity: area || 0, rapTons, uomId: 'SY' };
+        },
+        truckingQuantityKey: 'rapTons'
+    },
+    paving_base: {
+        id: 'PAVE-001',
+        description: '19mm Base Course',
+        wbsCode: '04.01',
+        colorClass: 'blue',
+        quantityUOM: 'SY',
+        rateUOM: 'SY',
+        hasDepth: true,
+        hasCycleTime: true,
+        hasMaterial: true,
+        materialId: 'M-002',
+        truckCapacity: CONSTANTS.TRUCK_TONS,
+        truckCapacityUOM: 'TON',
+        quantityCalc: (area, depth, wasteFactor) => {
+            const tons = area && depth ? Math.ceil(area * depth * CONSTANTS.HMA_FACTOR) : 0;
+            const tonsWithWaste = Math.ceil(tons * wasteFactor);
+            return { netQuantity: area || 0, tons, tonsWithWaste, uomId: 'SY', wasteFactor };
+        },
+        truckingQuantityKey: 'tonsWithWaste'
+    },
+    paving_surface: {
+        id: 'PAVE-002',
+        description: '9.5mm Surface Course',
+        wbsCode: '04.03',
+        colorClass: 'green',
+        quantityUOM: 'SY',
+        rateUOM: 'SY',
+        hasDepth: true,
+        hasCycleTime: true,
+        hasMaterial: true,
+        materialId: 'M-001',
+        truckCapacity: CONSTANTS.TRUCK_TONS,
+        truckCapacityUOM: 'TON',
+        quantityCalc: (area, depth, wasteFactor) => {
+            const tons = area && depth ? Math.ceil(area * depth * CONSTANTS.HMA_FACTOR) : 0;
+            const tonsWithWaste = Math.ceil(tons * wasteFactor);
+            return { netQuantity: area || 0, tons, tonsWithWaste, uomId: 'SY', wasteFactor };
+        },
+        truckingQuantityKey: 'tonsWithWaste'
+    },
+    tack_coat: {
+        id: 'TACK-001',
+        description: 'Tack Coat',
+        wbsCode: '04.02',
+        colorClass: 'teal',
+        quantityUOM: 'SY',
+        rateUOM: 'SY',
+        hasDepth: false,
+        hasCycleTime: false,
+        hasMaterial: true,
+        materialId: 'M-004',
+        quantityCalc: (area, _depth, _waste, _swell, tackAppRate) => {
+            const gallons = area ? Math.ceil(area * (tackAppRate || 0.05)) : 0;
+            return { netQuantity: area || 0, gallons, uomId: 'SY', tackAppRate: tackAppRate || 0.05 };
+        }
+    }
+};
+
+// ============================================
+// DEFAULT RISK TEMPLATES
+// ============================================
+
+export const DEFAULT_RISK_TEMPLATES = [
+    new RiskItem({
+        id: 'R-001', description: 'Rock encountered in excavation',
+        probability: 0.10, impactMin: 2000, impactMostLikely: 10000, impactMax: 50000,
+        affectedWBS: ['01'], riskType: RiskType.SCOPE
+    }),
+    new RiskItem({
+        id: 'R-002', description: 'Weather delays (rain/cold shutdown)',
+        probability: 0.20, impactMin: 500, impactMostLikely: 3000, impactMax: 10000,
+        affectedWBS: ['01', '02', '03', '04'], riskType: RiskType.SCHEDULE
+    }),
+    new RiskItem({
+        id: 'R-003', description: 'Asphalt material price increase',
+        probability: 0.15, impactMin: 1000, impactMostLikely: 5000, impactMax: 15000,
+        affectedWBS: ['04'], riskType: RiskType.PRICING
+    }),
+    new RiskItem({
+        id: 'R-004', description: 'Subgrade failure requiring undercut',
+        probability: 0.08, impactMin: 5000, impactMostLikely: 15000, impactMax: 40000,
+        affectedWBS: ['01', '02'], riskType: RiskType.SCOPE
+    }),
+    new RiskItem({
+        id: 'R-005', description: 'Utility conflict / access restriction',
+        probability: 0.12, impactMin: 1000, impactMostLikely: 5000, impactMax: 20000,
+        affectedWBS: ['01', '03'], riskType: RiskType.PRODUCTION
+    })
+];

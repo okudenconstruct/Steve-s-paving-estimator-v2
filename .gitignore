@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Capacitor
+android/
+ios/
+
+# Build output
+dist/
+.gradle/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Claude Code
+.claude/
+
+# Windows artifacts
+nul

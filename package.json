@@ -1,0 +1,33 @@
+{
+  "name": "paving-calculator",
+  "version": "1.0.0",
+  "description": "Paving Estimating Calculator for Android",
+  "main": "index.html",
+  "scripts": {
+    "build": "echo No build step needed - static HTML",
+    "cap:init": "npx cap init \"Paving Calculator\" com.paving.calculator --web-dir www",
+    "cap:add:android": "npx cap add android",
+    "cap:copy": "npx cap copy android",
+    "cap:sync": "npx cap sync android",
+    "cap:open": "npx cap open android",
+    "prepare": "npm run build && npm run cap:sync"
+  },
+  "keywords": [
+    "paving",
+    "calculator",
+    "estimator",
+    "construction"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@capacitor/android": "^8.0.2",
+    "@capacitor/core": "^8.0.2",
+    "@capacitor/splash-screen": "^8.0.0",
+    "@capacitor/status-bar": "^8.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.0.2",
+    "typescript": "^5.7.3"
+  }
+}

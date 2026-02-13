@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paving Estimating Calculator 3.0</title>
+    <!-- Fonts bundled locally for offline use -->
+    <style>
+        @font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 400; font-display: swap; src: url('fonts/ibm-plex-sans-latin-400-normal.woff2') format('woff2'); }
+        @font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 500; font-display: swap; src: url('fonts/ibm-plex-sans-latin-500-normal.woff2') format('woff2'); }
+        @font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 600; font-display: swap; src: url('fonts/ibm-plex-sans-latin-600-normal.woff2') format('woff2'); }
+        @font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 700; font-display: swap; src: url('fonts/ibm-plex-sans-latin-700-normal.woff2') format('woff2'); }
+        @font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 400; font-display: swap; src: url('fonts/jetbrains-mono-latin-400-normal.woff2') format('woff2'); }
+        @font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 500; font-display: swap; src: url('fonts/jetbrains-mono-latin-500-normal.woff2') format('woff2'); }
+        @font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 600; font-display: swap; src: url('fonts/jetbrains-mono-latin-600-normal.woff2') format('woff2'); }
+        @font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 700; font-display: swap; src: url('fonts/jetbrains-mono-latin-700-normal.woff2') format('woff2'); }
+    </style>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <div class="logo">
+                    <div class="logo-icon">P</div>
+                    <div class="logo-text">
+                        <h1>Paving Estimating Calculator</h1>
+                        <span>v3.0 • Rubric-Compliant Engine</span>
+                    </div>
+                </div>
+            </div>
+            <div class="header-controls">
+                <div class="converter-inline">
+                    <input type="number" id="sqFeetInput" placeholder="0" oninput="convertSfToSy()">
+                    <span>SF</span>
+                    <span>=</span>
+                    <input type="number" id="sqYardsResult" value="0" readonly style="background: var(--bg-tertiary);">
+                    <span>SY</span>
+                </div>
+                <button class="btn btn-primary" onclick="calculateAll()">
+                    <span>⚡</span> Calculate
+                </button>
+                <button class="btn btn-secondary" onclick="exportResults()">
+                    <span>📋</span> Export
+                </button>
+                <button class="btn btn-secondary" onclick="window.print()">
+                    <span>🖨️</span> Print
+                </button>
+                <button class="btn btn-danger" onclick="resetForm()">
+                    <span>↺</span> Reset
+                </button>
+            </div>
+        </header>
+
+        <!-- Project Name -->
+        <div class="project-info">
+            <label>Project Name</label>
+            <input type="text" id="projectName" placeholder="Enter project name...">
+        </div>
+
+        <!-- Rate Configuration Panel -->
+        <div class="panel-wrapper">
+            <button class="panel-toggle" onclick="togglePanel(this, 'rateContent')">
+                <span>💰 Rate Configuration (Materials, Labor, Equipment, Trucking, Mobilization)</span>
+                <span class="arrow">▼</span>
+            </button>
+            <div class="panel-content" id="rateContent">
+                <div class="rate-grid">
+                    <!-- Materials -->
+                    <div class="rate-section">
+                        <h4>Materials</h4>
+                        <div class="rate-row">
+                            <label>9.5mm HMA ($/ton)</label>
+                            <input type="number" id="rate95HMA" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="rate-row">
+                            <label>19mm HMA ($/ton)</label>
+                            <input type="number" id="rate19HMA" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="rate-row">
+                            <label>DGA ($/ton)</label>
+                            <input type="number" id="rateDGA" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="rate-row">
+                            <label>Tack Coat ($/gal)</label>
+                            <input type="number" id="rateTack" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="rate-row">
+                            <label>Tack Rate (gal/SY)</label>
+                            <input type="number" id="tackAppRate" placeholder="0.05" step="0.01" value="0.05">
+                        </div>
+                    </div>
+
+                    <!-- Index Notation -->
+                    <div class="rate-section">
+                        <h4>Price Index Reference</h4>
+                        <div class="rate-row">
+                            <label>Fuel Price Index</label>
+                            <input type="text" id="fuelIndex" placeholder="e.g., $3.45">
+                        </div>
+                        <div class="rate-row">
+                            <label>AC Price Index</label>
+                            <input type="text" id="acIndex" placeholder="e.g., $559">
+                        </div>
+                        <p style="font-size: 0.65rem; color: var(--text-muted); margin-top: 0.5rem; font-style: italic;">
+                            For reference on export. Adjust material prices to match expected construction-time indexes.
+                        </p>
+                    </div>
+
+                    <!-- Trucking -->
+                    <div class="rate-section">
+                        <h4>Trucking</h4>
+                        <div class="rate-row">
+                            <label>Trucking Rate ($/hr)</label>
+                            <input type="number" id="rateTrucking" placeholder="0.00" step="0.01">
+                        </div>
+                    </div>
+
+                    <!-- Crew & Equipment Rates -->
+                    <div class="rate-section">
+                        <h4>Crew & Equipment ($/hr)</h4>
+                        <div class="rate-row">
+                            <label>Excavation Crew</label>
+                            <input type="number" id="rateCrewExc" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="rate-row">
+                            <label>Fine Grading Crew</label>
+                            <input type="number" id="rateCrewFG" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="rate-row">
+                            <label>DGA Crew</label>
+                            <input type="number" id="rateCrewDGA" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="rate-row">
+                            <label>Milling Crew</label>
+                            <input type="number" id="rateCrewMill" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="rate-row">
+                            <label>Base Paving Crew</label>
+                            <input type="number" id="rateCrewBase" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="rate-row">
+                            <label>Surface Paving Crew</label>
+                            <input type="number" id="rateCrewSurf" placeholder="0.00" step="0.01">
+                        </div>
+                    </div>
+
+                    <!-- Mobilization -->
+                    <div class="rate-section">
+                        <h4>Mobilization ($)</h4>
+                        <div class="rate-row">
+                            <label>Excavation Mob</label>
+                            <input type="number" id="mobExc" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="rate-row">
+                            <label>Fine Grading Mob</label>
+                            <input type="number" id="mobFG" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="rate-row">
+                            <label>DGA Mob</label>
+                            <input type="number" id="mobDGA" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="rate-row">
+                            <label>Milling Mob</label>
+                            <input type="number" id="mobMill" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="rate-row">
+                            <label>Base Paving Mob</label>
+                            <input type="number" id="mobBase" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="rate-row">
+                            <label>Surface Paving Mob</label>
+                            <input type="number" id="mobSurf" placeholder="0.00" step="0.01">
+                        </div>
+                    </div>
+                </div>
+                <div class="rate-actions">
+                    <button class="btn btn-success btn-small" onclick="saveRates()">💾 Save Rates</button>
+                    <button class="btn btn-secondary btn-small" onclick="loadRates()">📂 Load Rates</button>
+                    <button class="btn btn-danger btn-small" onclick="clearSavedRates()">🗑️ Clear Saved</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Global Settings -->
+        <div class="settings-panel">
+            <div class="settings-row">
+                <div class="setting-group">
+                    <label>Project Complexity</label>
+                    <select id="complexityModifier" onchange="autoCalcCheck()">
+                        <option value="0.85">Simple (0.85×)</option>
+                        <option value="0.70" selected>Standard (0.70×)</option>
+                        <option value="0.55">Complex (0.55×)</option>
+                        <option value="1.00">Roadway (1.0×)</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label>Asphalt Waste</label>
+                    <select id="asphaltWaste" onchange="autoCalcCheck()">
+                        <option value="1.05">5%</option>
+                        <option value="1.07" selected>7%</option>
+                        <option value="1.10">10%</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label>Aggregate Waste</label>
+                    <select id="aggregateWaste" onchange="autoCalcCheck()">
+                        <option value="1.05">5%</option>
+                        <option value="1.07" selected>7%</option>
+                        <option value="1.10">10%</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label>Excavation Swell</label>
+                    <select id="swellFactor" onchange="autoCalcCheck()">
+                        <option value="1.15">15%</option>
+                        <option value="1.25" selected>25%</option>
+                        <option value="1.35">35%</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label>Trucking Efficiency</label>
+                    <select id="truckingEfficiency" onchange="autoCalcCheck()">
+                        <option value="1.00">100%</option>
+                        <option value="0.90" selected>90%</option>
+                        <option value="0.85">85%</option>
+                    </select>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="autoCalc" checked>
+                    <label for="autoCalc">Auto-calculate</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Grid -->
+        <div class="main-grid">
+            <!-- Excavation -->
+            <div class="section-card">
+                <div class="section-header red">Excavation</div>
+                <div class="section-body">
+                    <div class="input-group">
+                        <label>Area (SY)</label>
+                        <input type="number" inputmode="numeric" id="excavationArea" placeholder="0" oninput="autoCalcCheck()">
+                    </div>
+                    <div class="input-group">
+                        <label>Depth (in)</label>
+                        <input type="number" inputmode="decimal" id="excavationDepth" placeholder="0" oninput="autoCalcCheck()">
+                    </div>
+                    <div class="input-group">
+                        <label>Cycle Time (min)</label>
+                        <input type="number" inputmode="numeric" id="excavationCycle" placeholder="0" oninput="autoCalcCheck()">
+                        <div class="warning-badge" id="excCycleWarn">⚠ No cycle time — trucking will be $0</div>
+                    </div>
+                    <div class="input-group">
+                        <label>CY/day Rate</label>
+                        <select id="excavationRate" onchange="autoCalcCheck()">
+                            <option value="0">-- Select --</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                            <option value="150">150</option>
+                            <option value="200">200</option>
+                            <option value="300">300</option>
+                            <option value="400">400</option>
+                            <option value="500">500</option>
+                            <option value="600">600</option>
+                            <option value="800">800</option>
+                            <option value="1000">1000</option>
+                            <option value="1300">1300</option>
+                            <option value="1500">1500</option>
+                            <option value="2000">2000</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Crew Size</label>
+                        <select id="excCrewSize" onchange="autoCalcCheck()">
+                            <option value="1">1 person</option>
+                            <option value="2">2 people</option>
+                            <option value="3" selected>3 people</option>
+                            <option value="4">4 people</option>
+                            <option value="5">5 people</option>
+                            <option value="6">6 people</option>
+                            <option value="8">8 people</option>
+                            <option value="10">10 people</option>
+                        </select>
+                    </div>
+                    <div class="mob-checkbox">
+                        <input type="checkbox" id="excMob" checked onchange="autoCalcCheck()">
+                        <label for="excMob">Include Mobilization</label>
+                    </div>
+                </div>
+                <div class="output-card">
+                    <div class="output-header" style="color: var(--accent-red);">Output</div>
+                    <div class="output-body">
+                        <div class="output-row"><span class="label">Bank CY</span><span class="value" id="excBankCY">0</span></div>
+                        <div class="output-row"><span class="label">Loose CY</span><span class="value" id="excLooseCY">0</span></div>
+                        <div class="output-row"><span class="label">Tons</span><span class="value" id="excTons">0</span></div>
+                        <div class="output-row highlight"><span class="label">Days</span><span class="value" id="excDays">0</span></div>
+                        <div class="output-row"><span class="label">Trucks</span><span class="value" id="excTrucks">0</span></div>
+                        <div class="output-row"><span class="label">Truck Hrs</span><span class="value" id="excTruckHrs">0</span></div>
+                        <div class="output-divider"></div>
+                        <div class="output-row cost"><span class="label">Labor</span><span class="value" id="excLaborCost">$0</span></div>
+                        <div class="output-row cost"><span class="label">Trucking</span><span class="value" id="excTruckCost">$0</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fine Grading -->
+            <div class="section-card">
+                <div class="section-header purple">Fine Grading</div>
+                <div class="section-body">
+                    <div class="input-group">
+                        <label>Area (SY)</label>
+                        <input type="number" inputmode="numeric" id="fineGradingArea" placeholder="0" oninput="autoCalcCheck()">
+                    </div>
+                    <div class="input-group">
+                        <label>SY/day Rate</label>
+                        <select id="fineGradingRate" onchange="autoCalcCheck()">
+                            <option value="0">-- Select --</option>
+                            <option value="500">500</option>
+                            <option value="750">750</option>
+                            <option value="1000">1000</option>
+                            <option value="1500">1500</option>
+                            <option value="2000">2000</option>
+                            <option value="2500">2500</option>
+                            <option value="3000">3000</option>
+                            <option value="3500">3500</option>
+                            <option value="4000">4000</option>
+                            <option value="5000">5000</option>
+                            <option value="6000">6000</option>
+                            <option value="8000">8000</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Crew Size</label>
+                        <select id="fgCrewSize" onchange="autoCalcCheck()">
+                            <option value="1">1 person</option>
+                            <option value="2" selected>2 people</option>
+                            <option value="3">3 people</option>
+                            <option value="4">4 people</option>
+                            <option value="5">5 people</option>
+                            <option value="6">6 people</option>
+                        </select>
+                    </div>
+                    <div class="mob-checkbox">
+                        <input type="checkbox" id="fgMob" checked onchange="autoCalcCheck()">
+                        <label for="fgMob">Include Mobilization</label>
+                    </div>
+                </div>
+                <div class="output-card">
+                    <div class="output-header" style="color: var(--accent-purple);">Output</div>
+                    <div class="output-body">
+                        <div class="output-row highlight"><span class="label">Days</span><span class="value" id="fgDays">0</span></div>
+                        <div class="output-divider"></div>
+                        <div class="output-row cost"><span class="label">Labor</span><span class="value" id="fgLaborCost">$0</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DGA -->
+            <div class="section-card">
+                <div class="section-header yellow">DGA Base</div>
+                <div class="section-body">
+                    <div class="input-group">
+                        <label>Area (SY)</label>
+                        <input type="number" inputmode="numeric" id="dgaArea" placeholder="0" oninput="autoCalcCheck()">
+                    </div>
+                    <div class="input-group">
+                        <label>Depth (in)</label>
+                        <input type="number" inputmode="decimal" id="dgaDepth" placeholder="0" oninput="autoCalcCheck()">
+                    </div>
+                    <div class="input-group">
+                        <label>Cycle Time (min)</label>
+                        <input type="number" inputmode="numeric" id="dgaCycle" placeholder="0" oninput="autoCalcCheck()">
+                        <div class="warning-badge" id="dgaCycleWarn">⚠ No cycle time — trucking will be $0</div>
+                    </div>
+                    <div class="input-group">
+                        <label>CY/day Rate</label>
+                        <select id="dgaRate" onchange="autoCalcCheck()">
+                            <option value="0">-- Select --</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                            <option value="150">150</option>
+                            <option value="200">200</option>
+                            <option value="300">300</option>
+                            <option value="400">400</option>
+                            <option value="500">500</option>
+                            <option value="600">600</option>
+                            <option value="700">700</option>
+                            <option value="800">800</option>
+                            <option value="1000">1000</option>
+                            <option value="1200">1200</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Crew Size</label>
+                        <select id="dgaCrewSize" onchange="autoCalcCheck()">
+                            <option value="1">1 person</option>
+                            <option value="2">2 people</option>
+                            <option value="3" selected>3 people</option>
+                            <option value="4">4 people</option>
+                            <option value="5">5 people</option>
+                            <option value="6">6 people</option>
+                            <option value="8">8 people</option>
+                            <option value="10">10 people</option>
+                        </select>
+                    </div>
+                    <div class="mob-checkbox">
+                        <input type="checkbox" id="dgaMob" checked onchange="autoCalcCheck()">
+                        <label for="dgaMob">Include Mobilization</label>
+                    </div>
+                </div>
+                <div class="output-card">
+                    <div class="output-header" style="color: var(--accent-yellow);">Output</div>
+                    <div class="output-body">
+                        <div class="output-row"><span class="label">CY</span><span class="value" id="dgaCY">0</span></div>
+                        <div class="output-row"><span class="label">Tons</span><span class="value" id="dgaTons">0</span></div>
+                        <div class="output-row"><span class="label">+Waste</span><span class="value" id="dgaTonsWaste">0</span></div>
+                        <div class="output-row highlight"><span class="label">Days</span><span class="value" id="dgaDays">0</span></div>
+                        <div class="output-row"><span class="label">Trucks</span><span class="value" id="dgaTrucks">0</span></div>
+                        <div class="output-row"><span class="label">Truck Hrs</span><span class="value" id="dgaTruckHrs">0</span></div>
+                        <div class="output-divider"></div>
+                        <div class="output-row cost"><span class="label">Material</span><span class="value" id="dgaMatCost">$0</span></div>
+                        <div class="output-row cost"><span class="label">Labor</span><span class="value" id="dgaLaborCost">$0</span></div>
+                        <div class="output-row cost"><span class="label">Trucking</span><span class="value" id="dgaTruckCost">$0</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Milling -->
+            <div class="section-card">
+                <div class="section-header pink">Milling</div>
+                <div class="section-body">
+                    <div class="input-group">
+                        <label>Area (SY)</label>
+                        <input type="number" inputmode="numeric" id="millingArea" placeholder="0" oninput="autoCalcCheck()">
+                    </div>
+                    <div class="input-group">
+                        <label>Depth (in)</label>
+                        <input type="number" inputmode="decimal" id="millingDepth" placeholder="0" oninput="autoCalcCheck()">
+                    </div>
+                    <div class="input-group">
+                        <label>Cycle Time (min)</label>
+                        <input type="number" inputmode="numeric" id="millingCycle" placeholder="0" oninput="autoCalcCheck()">
+                        <div class="warning-badge" id="millCycleWarn">⚠ No cycle time — trucking will be $0</div>
+                    </div>
+                    <div class="input-group">
+                        <label>SY/day Rate</label>
+                        <select id="millingRate" onchange="autoCalcCheck()">
+                            <option value="0">-- Select --</option>
+                            <option value="500">500</option>
+                            <option value="1000">1000</option>
+                            <option value="1500">1500</option>
+                            <option value="2000">2000</option>
+                            <option value="3000">3000</option>
+                            <option value="4000">4000</option>
+                            <option value="5000">5000</option>
+                            <option value="6000">6000</option>
+                            <option value="8000">8000</option>
+                            <option value="10000">10000</option>
+                            <option value="14000">14000</option>
+                            <option value="18000">18000</option>
+                            <option value="25000">25000</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Crew Size</label>
+                        <select id="millCrewSize" onchange="autoCalcCheck()">
+                            <option value="2">2 people</option>
+                            <option value="3">3 people</option>
+                            <option value="4" selected>4 people</option>
+                            <option value="5">5 people</option>
+                            <option value="6">6 people</option>
+                            <option value="8">8 people</option>
+                            <option value="10">10 people</option>
+                        </select>
+                    </div>
+                    <div class="mob-checkbox">
+                        <input type="checkbox" id="millMob" checked onchange="autoCalcCheck()">
+                        <label for="millMob">Include Mobilization</label>
+                    </div>
+                </div>
+                <div class="output-card">
+                    <div class="output-header" style="color: var(--accent-pink);">Output</div>
+                    <div class="output-body">
+                        <div class="output-row"><span class="label">RAP Tons</span><span class="value" id="millTons">0</span></div>
+                        <div class="output-row highlight"><span class="label">Days</span><span class="value" id="millDays">0</span></div>
+                        <div class="output-row"><span class="label">Trucks</span><span class="value" id="millTrucks">0</span></div>
+                        <div class="output-row"><span class="label">Truck Hrs</span><span class="value" id="millTruckHrs">0</span></div>
+                        <div class="output-divider"></div>
+                        <div class="output-row cost"><span class="label">Labor</span><span class="value" id="millLaborCost">$0</span></div>
+                        <div class="output-row cost"><span class="label">Trucking</span><span class="value" id="millTruckCost">$0</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Base Course -->
+            <div class="section-card">
+                <div class="section-header blue">19mm Base</div>
+                <div class="section-body">
+                    <div class="input-group">
+                        <label>Area (SY)</label>
+                        <input type="number" inputmode="numeric" id="baseArea" placeholder="0" oninput="autoCalcCheck()">
+                    </div>
+                    <div class="input-group">
+                        <label>Depth (in)</label>
+                        <input type="number" inputmode="decimal" id="baseDepth" placeholder="0" oninput="autoCalcCheck()">
+                    </div>
+                    <div class="input-group">
+                        <label>Cycle Time (min)</label>
+                        <input type="number" inputmode="numeric" id="baseCycle" placeholder="0" oninput="autoCalcCheck()">
+                        <div class="warning-badge" id="baseCycleWarn">⚠ No cycle time — trucking will be $0</div>
+                    </div>
+                    <div class="input-group">
+                        <label>SY/day Rate</label>
+                        <select id="baseRate" onchange="autoCalcCheck()">
+                            <option value="0">-- Select --</option>
+                            <option value="500">500</option>
+                            <option value="750">750</option>
+                            <option value="1000">1000</option>
+                            <option value="1500">1500</option>
+                            <option value="2000">2000</option>
+                            <option value="2500">2500</option>
+                            <option value="3000">3000</option>
+                            <option value="3500">3500</option>
+                            <option value="4000">4000</option>
+                            <option value="4500">4500</option>
+                            <option value="5000">5000</option>
+                            <option value="6000">6000</option>
+                            <option value="8000">8000</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Crew Size</label>
+                        <select id="baseCrewSize" onchange="autoCalcCheck()">
+                            <option value="2">2 people</option>
+                            <option value="3">3 people</option>
+                            <option value="4">4 people</option>
+                            <option value="5">5 people</option>
+                            <option value="6" selected>6 people</option>
+                            <option value="8">8 people</option>
+                            <option value="10">10 people</option>
+                            <option value="12">12 people</option>
+                        </select>
+                    </div>
+                    <div class="mob-checkbox">
+                        <input type="checkbox" id="baseMob" checked onchange="autoCalcCheck()">
+                        <label for="baseMob">Include Mobilization</label>
+                    </div>
+                </div>
+                <div class="output-card">
+                    <div class="output-header" style="color: var(--accent-blue);">Output</div>
+                    <div class="output-body">
+                        <div class="output-row"><span class="label">Tons</span><span class="value" id="baseTons">0</span></div>
+                        <div class="output-row"><span class="label">+Waste</span><span class="value" id="baseTonsWaste">0</span></div>
+                        <div class="output-row highlight"><span class="label">Days</span><span class="value" id="baseDays">0</span></div>
+                        <div class="output-row"><span class="label">Trucks</span><span class="value" id="baseTrucks">0</span></div>
+                        <div class="output-row"><span class="label">Truck Hrs</span><span class="value" id="baseTruckHrs">0</span></div>
+                        <div class="output-divider"></div>
+                        <div class="output-row cost"><span class="label">Material</span><span class="value" id="baseMatCost">$0</span></div>
+                        <div class="output-row cost"><span class="label">Labor</span><span class="value" id="baseLaborCost">$0</span></div>
+                        <div class="output-row cost"><span class="label">Trucking</span><span class="value" id="baseTruckCost">$0</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Surface Course -->
+            <div class="section-card">
+                <div class="section-header green">9.5mm Surface</div>
+                <div class="section-body">
+                    <div class="input-group">
+                        <label>Area (SY)</label>
+                        <input type="number" inputmode="numeric" id="surfaceArea" placeholder="0" oninput="autoCalcCheck()">
+                    </div>
+                    <div class="input-group">
+                        <label>Depth (in)</label>
+                        <input type="number" inputmode="decimal" id="surfaceDepth" placeholder="0" oninput="autoCalcCheck()">
+                    </div>
+                    <div class="input-group">
+                        <label>Cycle Time (min)</label>
+                        <input type="number" inputmode="numeric" id="surfaceCycle" placeholder="0" oninput="autoCalcCheck()">
+                        <div class="warning-badge" id="surfCycleWarn">⚠ No cycle time — trucking will be $0</div>
+                    </div>
+                    <div class="input-group">
+                        <label>SY/day Rate</label>
+                        <select id="surfaceRate" onchange="autoCalcCheck()">
+                            <option value="0">-- Select --</option>
+                            <option value="500">500</option>
+                            <option value="750">750</option>
+                            <option value="1000">1000</option>
+                            <option value="1500">1500</option>
+                            <option value="2000">2000</option>
+                            <option value="2500">2500</option>
+                            <option value="3000">3000</option>
+                            <option value="3500">3500</option>
+                            <option value="4000">4000</option>
+                            <option value="5000">5000</option>
+                            <option value="6000">6000</option>
+                            <option value="8000">8000</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Crew Size</label>
+                        <select id="surfCrewSize" onchange="autoCalcCheck()">
+                            <option value="2">2 people</option>
+                            <option value="3">3 people</option>
+                            <option value="4">4 people</option>
+                            <option value="5">5 people</option>
+                            <option value="6" selected>6 people</option>
+                            <option value="8">8 people</option>
+                            <option value="10">10 people</option>
+                            <option value="12">12 people</option>
+                        </select>
+                    </div>
+                    <div class="mob-checkbox">
+                        <input type="checkbox" id="surfMob" checked onchange="autoCalcCheck()">
+                        <label for="surfMob">Include Mobilization</label>
+                    </div>
+                </div>
+                <div class="output-card">
+                    <div class="output-header" style="color: var(--accent-green);">Output</div>
+                    <div class="output-body">
+                        <div class="output-row"><span class="label">Tons</span><span class="value" id="surfTons">0</span></div>
+                        <div class="output-row"><span class="label">+Waste</span><span class="value" id="surfTonsWaste">0</span></div>
+                        <div class="output-row highlight"><span class="label">Days</span><span class="value" id="surfDays">0</span></div>
+                        <div class="output-row"><span class="label">Trucks</span><span class="value" id="surfTrucks">0</span></div>
+                        <div class="output-row"><span class="label">Truck Hrs</span><span class="value" id="surfTruckHrs">0</span></div>
+                        <div class="output-divider"></div>
+                        <div class="output-row cost"><span class="label">Material</span><span class="value" id="surfMatCost">$0</span></div>
+                        <div class="output-row cost"><span class="label">Labor</span><span class="value" id="surfLaborCost">$0</span></div>
+                        <div class="output-row cost"><span class="label">Trucking</span><span class="value" id="surfTruckCost">$0</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tack Coat Section -->
+        <div class="tack-section">
+            <h3>🛢️ Tack Coat</h3>
+            <div class="tack-grid">
+                <div class="input-group" style="width: 150px;">
+                    <label>Application Area (SY)</label>
+                    <div class="hint">Defaults to Surface Area</div>
+                    <input type="number" inputmode="numeric" id="tackArea" placeholder="0" oninput="autoCalcCheck()">
+                </div>
+                <div class="input-group" style="width: 120px;">
+                    <label>App Rate (gal/SY)</label>
+                    <input type="number" id="tackRateDisplay" value="0.05" step="0.01" readonly style="background: var(--bg-tertiary);">
+                </div>
+            </div>
+            <div class="tack-output">
+                <div class="stat">
+                    <span class="stat-label">Gallons Required</span>
+                    <span class="stat-value" id="tackGallons">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Tack Cost</span>
+                    <span class="stat-value" style="color: var(--accent-green);" id="tackCost">$0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Production Summary -->
+        <div class="summary-section">
+            <div class="summary-header">
+                <h2>📊 Production Summary</h2>
+            </div>
+            <div class="summary-grid">
+                <div class="summary-stat">
+                    <div class="label">Total Days</div>
+                    <div class="value"><span id="totalDays">0</span><span class="unit">days</span></div>
+                </div>
+                <div class="summary-stat">
+                    <div class="label">Total Truck Hours</div>
+                    <div class="value"><span id="totalTruckHrs">0</span><span class="unit">hrs</span></div>
+                </div>
+                <div class="summary-stat">
+                    <div class="label">Total HMA</div>
+                    <div class="value"><span id="totalHMA">0</span><span class="unit">tons</span></div>
+                </div>
+                <div class="summary-stat">
+                    <div class="label">DGA</div>
+                    <div class="value"><span id="totalDGA">0</span><span class="unit">tons</span></div>
+                </div>
+                <div class="summary-stat">
+                    <div class="label">Excavation</div>
+                    <div class="value"><span id="totalExcCY">0</span><span class="unit">CY</span></div>
+                </div>
+                <div class="summary-stat">
+                    <div class="label">RAP Generated</div>
+                    <div class="value"><span id="totalRAP">0</span><span class="unit">tons</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schedule Summary (CPM) -->
+        <div class="schedule-section">
+            <div class="schedule-grid">
+                <div class="schedule-stat">
+                    <div class="label">CPM Duration</div>
+                    <div class="value"><span id="projectDuration">0</span><span class="unit">days</span></div>
+                </div>
+                <div class="schedule-stat">
+                    <div class="label">Sum of Activities</div>
+                    <div class="value"><span id="activityDaysTotal">0</span><span class="unit">days</span></div>
+                </div>
+                <div class="schedule-stat">
+                    <div class="label">Concurrency Saving</div>
+                    <div class="value"><span id="concurrencySaving">0</span><span class="unit">days</span></div>
+                </div>
+            </div>
+            <div style="margin-top: 0.75rem;">
+                <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.35rem;">Critical Path</div>
+                <div style="font-size: 0.85rem; font-weight: 600; color: var(--accent-orange);" id="criticalPathDisplay">None</div>
+            </div>
+            <div class="gantt-container" id="ganttContainer"></div>
+        </div>
+
+        <!-- Validation Panel -->
+        <div id="validationPanel" class="validation-panel" style="display: none;"></div>
+
+        <!-- Indirect Costs Panel -->
+        <div class="panel-wrapper">
+            <button class="panel-toggle" onclick="togglePanel(this, 'indirectContent')">
+                <span>🏗️ Indirect Costs (GC, Overhead, Bonds, Contingency)</span>
+                <span class="arrow">▼</span>
+            </button>
+            <div class="panel-content" id="indirectContent">
+                <div class="indirect-grid">
+                    <div class="indirect-item">
+                        <h4>General Conditions</h4>
+                        <div class="rate-row">
+                            <label>Superintendent ($/day)</label>
+                            <input type="number" id="gcSuperPerDay" placeholder="0" step="1" oninput="autoCalcCheck()">
+                        </div>
+                        <div class="rate-row">
+                            <label>Field Office ($/day)</label>
+                            <input type="number" id="gcFieldOfficePerDay" placeholder="0" step="1" oninput="autoCalcCheck()">
+                        </div>
+                        <div class="rate-row">
+                            <label>Temp Facilities ($/day)</label>
+                            <input type="number" id="gcTempFacPerDay" placeholder="0" step="1" oninput="autoCalcCheck()">
+                        </div>
+                        <div class="rate-row">
+                            <label>Small Tools (%)</label>
+                            <input type="number" id="gcSmallToolsPct" placeholder="0" step="0.5" oninput="autoCalcCheck()">
+                        </div>
+                        <div class="rate-row">
+                            <label>Safety/PPE (%)</label>
+                            <input type="number" id="gcSafetyPct" placeholder="0" step="0.5" oninput="autoCalcCheck()">
+                        </div>
+                        <div class="rate-row">
+                            <label>QC Testing (lump)</label>
+                            <input type="number" id="gcQcLump" placeholder="0" step="1" oninput="autoCalcCheck()">
+                        </div>
+                        <div class="rate-row">
+                            <label>Cleanup (lump)</label>
+                            <input type="number" id="gcCleanupLump" placeholder="0" step="1" oninput="autoCalcCheck()">
+                        </div>
+                    </div>
+                    <div class="indirect-item">
+                        <h4>Overhead & Fee</h4>
+                        <div class="rate-row">
+                            <label>Home Office OH (%)</label>
+                            <input type="number" id="homeOfficeOhPct" placeholder="0" step="0.5" oninput="autoCalcCheck()">
+                        </div>
+                        <div class="rate-row">
+                            <label>Bonds/Insurance</label>
+                        </div>
+                        <div class="rate-row">
+                            <label>Bond Rate (%)</label>
+                            <input type="number" id="bondRatePct" placeholder="0" step="0.1" oninput="autoCalcCheck()">
+                        </div>
+                        <div class="rate-row">
+                            <label>GL Insurance (%)</label>
+                            <input type="number" id="glInsurancePct" placeholder="0" step="0.1" oninput="autoCalcCheck()">
+                        </div>
+                        <div class="rate-row">
+                            <label>WC Rate (%)</label>
+                            <input type="number" id="wcRatePct" placeholder="0" step="0.1" oninput="autoCalcCheck()">
+                        </div>
+                        <div class="rate-row">
+                            <label>Permit Fees (lump)</label>
+                            <input type="number" id="permitFeesLump" placeholder="0" step="1" oninput="autoCalcCheck()">
+                        </div>
+                        <div class="rate-row">
+                            <label>Prevailing Wage (lump)</label>
+                            <input type="number" id="prevailingWageLump" placeholder="0" step="1" oninput="autoCalcCheck()">
+                        </div>
+                    </div>
+                    <div class="indirect-item">
+                        <h4>Contingency</h4>
+                        <div class="rate-row">
+                            <label>Contingency (%)</label>
+                            <input type="number" id="contingencyPct" placeholder="0" step="1" oninput="autoCalcCheck()">
+                        </div>
+                        <p style="font-size: 0.65rem; color: var(--text-muted); margin-top: 0.5rem; font-style: italic;">
+                            Applied to subtotal before contingency. AACE Class 3 typical: 10-15%.
+                        </p>
+                    </div>
+                </div>
+                <!-- Indirect cost computed outputs -->
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+                    <div class="cost-line"><span class="label">General Conditions</span><span class="value" id="gcTotalDisplay">$0</span></div>
+                    <div class="cost-line"><span class="label">Total Field Cost</span><span class="value" id="totalFieldCostDisplay">$0</span></div>
+                    <div class="cost-line"><span class="label">Home Office Overhead</span><span class="value" id="homeOfficeDisplay">$0</span></div>
+                    <div class="cost-line"><span class="label">Fee / Profit</span><span class="value" id="feeProfitDisplay">$0</span></div>
+                    <div class="cost-line"><span class="label">Escalation</span><span class="value" id="escalationDisplay">$0</span></div>
+                    <div class="cost-line"><span class="label">Bonds & Insurance</span><span class="value" id="biTotalDisplay">$0</span></div>
+                    <div class="cost-line"><span class="label">Subtotal (pre-contingency)</span><span class="value" id="subtotalBeforeContDisplay">$0</span></div>
+                    <div class="cost-line"><span class="label">Contingency</span><span class="value" id="contingencyDisplay">$0</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cost Summary -->
+        <div class="cost-summary">
+            <h2>💵 Cost Summary</h2>
+            <div class="cost-grid">
+                <div class="cost-category">
+                    <h4>Materials</h4>
+                    <div class="cost-line">
+                        <span class="label">9.5mm HMA</span>
+                        <span class="value" id="cost95HMA">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">19mm HMA</span>
+                        <span class="value" id="cost19HMA">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">DGA</span>
+                        <span class="value" id="costDGAMat">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">Tack Coat</span>
+                        <span class="value" id="costTack">$0</span>
+                    </div>
+                    <div class="cost-line subtotal">
+                        <span class="label">Materials Subtotal</span>
+                        <span class="value" id="subtotalMaterials">$0</span>
+                    </div>
+                </div>
+
+                <div class="cost-category">
+                    <h4>Labor & Equipment</h4>
+                    <div class="cost-line">
+                        <span class="label">Excavation</span>
+                        <span class="value" id="costLaborExc">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">Fine Grading</span>
+                        <span class="value" id="costLaborFG">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">DGA</span>
+                        <span class="value" id="costLaborDGA">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">Milling</span>
+                        <span class="value" id="costLaborMill">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">Base Paving</span>
+                        <span class="value" id="costLaborBase">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">Surface Paving</span>
+                        <span class="value" id="costLaborSurf">$0</span>
+                    </div>
+                    <div class="cost-line subtotal">
+                        <span class="label">Labor Subtotal</span>
+                        <span class="value" id="subtotalLabor">$0</span>
+                    </div>
+                </div>
+
+                <div class="cost-category">
+                    <h4>Trucking</h4>
+                    <div class="cost-line">
+                        <span class="label">Excavation</span>
+                        <span class="value" id="costTruckExc">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">DGA</span>
+                        <span class="value" id="costTruckDGA">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">Milling</span>
+                        <span class="value" id="costTruckMill">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">Base Paving</span>
+                        <span class="value" id="costTruckBase">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">Surface Paving</span>
+                        <span class="value" id="costTruckSurf">$0</span>
+                    </div>
+                    <div class="cost-line subtotal">
+                        <span class="label">Trucking Subtotal</span>
+                        <span class="value" id="subtotalTrucking">$0</span>
+                    </div>
+                </div>
+
+                <div class="cost-category">
+                    <h4>Mobilization</h4>
+                    <div class="cost-line">
+                        <span class="label">Excavation</span>
+                        <span class="value" id="costMobExc">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">Fine Grading</span>
+                        <span class="value" id="costMobFG">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">DGA</span>
+                        <span class="value" id="costMobDGA">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">Milling</span>
+                        <span class="value" id="costMobMill">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">Base Paving</span>
+                        <span class="value" id="costMobBase">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">Surface Paving</span>
+                        <span class="value" id="costMobSurf">$0</span>
+                    </div>
+                    <div class="cost-line subtotal">
+                        <span class="label">Mobilization Subtotal</span>
+                        <span class="value" id="subtotalMob">$0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cost-totals">
+                <div class="cost-total-row">
+                    <span class="label">Direct Cost Total</span>
+                    <span class="value" id="directCostTotal">$0</span>
+                </div>
+                <div class="markup-row">
+                    <label>Markup / Profit %</label>
+                    <input type="number" id="markupPercent" value="15" step="1" oninput="autoCalcCheck()">
+                    <span style="color: var(--text-muted);">%</span>
+                    <span class="value" style="margin-left: auto;" id="markupAmount">$0</span>
+                </div>
+                <div class="cost-total-row grand">
+                    <span class="label">BID PRICE</span>
+                    <span class="value" id="bidPrice">$0</span>
+                </div>
+
+                <div class="unit-costs">
+                    <div class="unit-cost-stat">
+                        <div class="label">Cost / SY (Paved)</div>
+                        <div class="value" id="costPerSY">—</div>
+                    </div>
+                    <div class="unit-cost-stat">
+                        <div class="label">Cost / Ton (HMA)</div>
+                        <div class="value" id="costPerTon">—</div>
+                    </div>
+                    <div class="unit-cost-stat">
+                        <div class="label">Materials %</div>
+                        <div class="value" id="materialsPct">—</div>
+                    </div>
+                    <div class="unit-cost-stat">
+                        <div class="label">Labor %</div>
+                        <div class="value" id="laborPct">—</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reference Section -->
+        <div class="reference-section">
+            <button class="panel-toggle" onclick="togglePanel(this, 'referenceContent')">
+                <span>📚 Reference Tables & Crew Assemblies</span>
+                <span class="arrow">▼</span>
+            </button>
+            <div class="panel-content" id="referenceContent">
+                <div class="reference-grid">
+                    <div class="reference-card">
+                        <h3>Material Densities</h3>
+                        <table>
+                            <tr><th>Material</th><th>Density</th><th>Source</th></tr>
+                            <tr><td>HMA (compacted)</td><td>145 lbs/ft³</td><td>Asphalt Institute</td></tr>
+                            <tr><td>DGA (compacted)</td><td>1.9 tons/CY</td><td>Industry std</td></tr>
+                            <tr><td>RAP (loose)</td><td>130 lbs/ft³</td><td>FHWA</td></tr>
+                            <tr><td>Excavated soil</td><td>1.5 tons/CY</td><td>Caterpillar</td></tr>
+                        </table>
+                        <h4>Key Formulas</h4>
+                        <ul>
+                            <li><strong>Asphalt Tons:</strong> Area(SY) × Depth(in) × 0.0575</li>
+                            <li><strong>Volume (CY):</strong> Area(SY) × Depth(in) ÷ 324</li>
+                            <li><strong>RAP Tons:</strong> Area(SY) × Depth(in) × 0.04875</li>
+                        </ul>
+                    </div>
+
+                    <div class="reference-card">
+                        <h3>Production Rates <span class="source-tag">WisDOT 2022</span></h3>
+                        <table>
+                            <tr><th>Activity</th><th>DOT Range</th><th>Typical</th></tr>
+                            <tr><td>Excavation</td><td>250-1,300 CY/day</td><td>600</td></tr>
+                            <tr><td>Milling (thin)</td><td>8,500-25,000 SY/day</td><td>17,000</td></tr>
+                            <tr><td>Milling (thick)</td><td>8,000-20,000 SY/day</td><td>14,000</td></tr>
+                            <tr><td>HMA Paving</td><td>700-1,800 tons/day</td><td>1,300</td></tr>
+                        </table>
+                        <h4>Parking Lot Modifiers</h4>
+                        <ul>
+                            <li><strong>Simple (0.85×):</strong> Large retail, open</li>
+                            <li><strong>Standard (0.70×):</strong> Typical commercial</li>
+                            <li><strong>Complex (0.55×):</strong> Dense obstacles</li>
+                        </ul>
+                    </div>
+
+                    <div class="reference-card">
+                        <h3>Crew & Equipment Assemblies</h3>
+                        <h4>Excavation Crew</h4>
+                        <ul>
+                            <li>Excavator (Cat 320 or similar)</li>
+                            <li>Operator + 1-2 laborers</li>
+                            <li>Skid steer for cleanup</li>
+                        </ul>
+                        <h4>Fine Grading Crew</h4>
+                        <ul>
+                            <li>Motor grader or skid steer</li>
+                            <li>Plate compactor / roller</li>
+                            <li>Operator + 1 laborer</li>
+                        </ul>
+                        <h4>Milling Crew</h4>
+                        <ul>
+                            <li>Cold planer (Wirtgen or similar)</li>
+                            <li>Skid steer for cleanup</li>
+                            <li>Operator + 2-3 laborers</li>
+                        </ul>
+                        <h4>Paving Crew</h4>
+                        <ul>
+                            <li>Asphalt paver</li>
+                            <li>2 rollers (breakdown + finish)</li>
+                            <li>Material transfer vehicle (optional)</li>
+                            <li>Operator + 4-6 laborers</li>
+                        </ul>
+                    </div>
+
+                    <div class="reference-card">
+                        <h3>Trucking Standards</h3>
+                        <table>
+                            <tr><th>Truck Type</th><th>Volume</th><th>Weight</th></tr>
+                            <tr><td>Tri-axle (dirt/DGA)</td><td>15-16 CY</td><td>22 tons max</td></tr>
+                            <tr><td>Tri-axle (HMA)</td><td>—</td><td>22 tons</td></tr>
+                            <tr><td>Tandem</td><td>10-14 CY</td><td>12-16 tons</td></tr>
+                        </table>
+                        <h4>Fleet Calculation</h4>
+                        <ul>
+                            <li>Loads/day = Output ÷ truck capacity</li>
+                            <li>Trucks = (Loads × Cycle) ÷ 480 min</li>
+                            <li>Hours = Trucks × Days × 8</li>
+                        </ul>
+                        <h4>Tack Coat</h4>
+                        <ul>
+                            <li>Typical rate: 0.03-0.05 gal/SY</li>
+                            <li>Applied to milled surface or base course prior to surface paving</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Paving Estimating Calculator v3.0 • Rubric-Compliant CPM Engine</p>
+            <p style="margin-top: 0.5rem;">Sources: Wisconsin DOT (2022), Asphalt Institute, FHWA, Caterpillar</p>
+        </footer>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">Saved!</div>
+
+    <!-- App Module -->
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
