@@ -20,10 +20,12 @@ import { Validator } from './validation/Validator.js';
 import { EstimateStore } from './storage/EstimateStore.js';
 import { Renderer } from './ui/Renderer.js';
 import { ExportService } from './ui/ExportService.js';
-import { ACTIVITY_CONFIG, DEFAULT_DEPENDENCIES, RATE_OPTIONS, DEFAULT_CREW_SIZES } from './data/paving-defaults.js';
+import { ACTIVITY_CONFIG, DEFAULT_DEPENDENCIES, RATE_OPTIONS, DEFAULT_CREW_SIZES, SCOPE_ITEMS, CREW_DATA, CREW_THRESHOLDS, PRODUCTION_RATES } from './data/paving-defaults.js';
+import { MATERIAL_PRICES } from './data/constants.js';
 
 // ---- Global state ----
 let estimate = null;
+let currentJobMode = 'parking_lot';
 const calculator = new Calculator();
 const validator = new Validator();
 const store = new EstimateStore();
@@ -315,6 +317,21 @@ function buildEstimateFromUI() {
         }
     });
 
+    // v4.0: Collect scope assumptions
+    const scopeAssumptions = {};
+    for (const item of SCOPE_ITEMS) {
+        const el = document.querySelector(`input[name="scope_${item.id}"]:checked`);
+        scopeAssumptions[item.id] = el ? el.value : item.default;
+    }
+
+    // v4.0: Collect reviewer notes
+    const reviewerNotes = {
+        general: getTextVal('noteGeneral'),
+        pricing: getTextVal('notePricing'),
+        schedule: getTextVal('noteSchedule'),
+        risk: getTextVal('noteRisk'),
+    };
+
     estimate = new Estimate({
         projectName: getTextVal('projectName'),
         activities,
@@ -323,7 +340,18 @@ function buildEstimateFromUI() {
             complexityVal, asphaltWaste, aggregateWaste, swellFactor, truckEfficiency, tackAppRate,
             fuelIndex: getTextVal('fuelIndex'),
             acIndex: getTextVal('acIndex')
-        }
+        },
+        // v4.0 additions
+        jobMode: currentJobMode,
+        shiftSettings: {
+            stdShift: getVal('stdShift') || 8,
+            maxShift: getVal('maxShift') || 12,
+        },
+        weatherDays: getVal('weatherDays') || 2,
+        travelHours: getVal('travelHours') || 1,
+        clusterMode: isChecked('clusterMode'),
+        scopeAssumptions,
+        reviewerNotes,
     });
 
     return estimate;
@@ -426,8 +454,22 @@ function saveRates() {
         const el = document.getElementById(id);
         if (el) rates[id] = el.value;
     }
-    if (store.saveRatesLegacy(rates)) {
-        Renderer.showToast('Rates saved locally!');
+
+    // Also save v4.0 settings
+    const settings = {
+        jobMode: currentJobMode,
+        stdShift: getVal('stdShift') || 8,
+        maxShift: getVal('maxShift') || 12,
+        weatherDays: getVal('weatherDays'),
+        travelHours: getVal('travelHours'),
+        clusterMode: isChecked('clusterMode'),
+    };
+
+    const ratesSaved = store.saveRatesLegacy(rates);
+    store.saveSettings(settings);
+
+    if (ratesSaved) {
+        Renderer.showToast('Rates & settings saved!');
     } else {
         Renderer.showToast('Unable to save — storage may be full');
     }
@@ -476,7 +518,7 @@ function resetForm() {
     Renderer.showToast('Form reset');
 }
 
-function exportResults() {
+function exportResults(mode) {
     if (!estimate || !estimate.results) {
         calculateAll();
     }
@@ -486,15 +528,102 @@ function exportResults() {
         return;
     }
 
-    const report = ExportService.generateTextReport(estimate, results, {
+    const settings = {
         fuelIndex: getTextVal('fuelIndex'),
         acIndex: getTextVal('acIndex')
-    });
+    };
 
-    ExportService.copyToClipboard(report).then(() => {
-        Renderer.showToast('Results copied to clipboard!');
-    });
+    switch (mode) {
+        case 'json': {
+            const json = ExportService.generateJSONExport(estimate, results);
+            const filename = (estimate.projectName || 'estimate').replace(/\s+/g, '_') + '.json';
+            ExportService.downloadAsFile(json, filename, 'application/json');
+            Renderer.showToast('JSON downloaded!');
+            break;
+        }
+        case 'print':
+            ExportService.triggerPrint();
+            break;
+        case 'quick': {
+            const quick = ExportService.generateQuickReport(estimate, results, settings);
+            ExportService.copyToClipboard(quick).then(() => {
+                Renderer.showToast('Quick summary copied!');
+            });
+            break;
+        }
+        case 'full':
+        default: {
+            const report = ExportService.generateFullReport(estimate, results, settings);
+            ExportService.copyToClipboard(report).then(() => {
+                Renderer.showToast('Full report copied!');
+            });
+            break;
+        }
+    }
 }
+
+// ---- v4.0 Job Mode Toggle ----
+
+function setJobMode(mode) {
+    currentJobMode = mode;
+    document.getElementById('pillParkingLot').classList.toggle('active', mode === 'parking_lot');
+    document.getElementById('pillRoadway').classList.toggle('active', mode === 'roadway');
+    autoCalcCheck();
+}
+
+// ---- v4.0 Scope Grid Initialization ----
+
+function initScopeGrid() {
+    const grid = document.getElementById('scopeGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    for (const item of SCOPE_ITEMS) {
+        const row = document.createElement('div');
+        row.className = 'scope-row';
+
+        const label = document.createElement('span');
+        label.className = 'scope-label';
+        label.textContent = item.name;
+
+        const pills = document.createElement('div');
+        pills.className = 'scope-pills';
+
+        for (const val of ['included', 'excluded', 'na']) {
+            const id = `scope_${item.id}_${val}`;
+            const input = document.createElement('input');
+            input.type = 'radio';
+            input.name = `scope_${item.id}`;
+            input.id = id;
+            input.value = val;
+            if (val === item.default) input.checked = true;
+
+            const lbl = document.createElement('label');
+            lbl.htmlFor = id;
+            lbl.className = `scope-pill scope-${val}`;
+            lbl.textContent = val === 'na' ? 'N/A' : val.charAt(0).toUpperCase() + val.slice(1);
+
+            pills.appendChild(input);
+            pills.appendChild(lbl);
+        }
+
+        row.appendChild(label);
+        row.appendChild(pills);
+        grid.appendChild(row);
+    }
+}
+
+function toggleExportMenu() {
+    const menu = document.getElementById('exportMenu');
+    if (menu) menu.classList.toggle('open');
+}
+
+// Close export menu when clicking outside
+document.addEventListener('click', (e) => {
+    const menu = document.getElementById('exportMenu');
+    const dropdown = e.target.closest('.export-dropdown');
+    if (menu && !dropdown) menu.classList.remove('open');
+});
 
 // ---- Expose functions to HTML onclick handlers ----
 window.calculateAll = calculateAll;
@@ -506,6 +635,8 @@ window.loadRates = loadRates;
 window.clearSavedRates = clearSavedRates;
 window.resetForm = resetForm;
 window.exportResults = exportResults;
+window.toggleExportMenu = toggleExportMenu;
+window.setJobMode = setJobMode;
 
 // ---- Initialization ----
 document.addEventListener('DOMContentLoaded', function () {
@@ -517,4 +648,18 @@ document.addEventListener('DOMContentLoaded', function () {
             if (el) el.value = val;
         }
     }
+
+    // Load v4.0 settings
+    const savedSettings = store.loadSettings();
+    if (savedSettings) {
+        if (savedSettings.jobMode) setJobMode(savedSettings.jobMode);
+        if (savedSettings.stdShift) document.getElementById('stdShift').value = savedSettings.stdShift;
+        if (savedSettings.maxShift) document.getElementById('maxShift').value = savedSettings.maxShift;
+        if (savedSettings.weatherDays != null) document.getElementById('weatherDays').value = savedSettings.weatherDays;
+        if (savedSettings.travelHours != null) document.getElementById('travelHours').value = savedSettings.travelHours;
+        if (savedSettings.clusterMode != null) document.getElementById('clusterMode').checked = savedSettings.clusterMode;
+    }
+
+    // Initialize scope grid
+    initScopeGrid();
 });

@@ -81,6 +81,217 @@ export const EFFICIENCY_OPTIONS = [
 ];
 
 // ============================================
+// DUAL-MODE PRODUCTION RATES (SY/day)
+// Parking Lot: from HeavyBid production data medians
+// Roadway: from WisDOT Production Rate Table
+// ============================================
+
+export const PRODUCTION_RATES = {
+    parking_lot: {
+        excavation:     150,
+        fine_grading:  3500,
+        dga_base:      2500,
+        milling:       3300,
+        paving_base:   1200,
+        paving_surface: 3500,
+        tack_coat:     5000,
+    },
+    roadway: {
+        excavation:     300,
+        fine_grading:  8000,
+        dga_base:      4000,
+        milling:      14000,
+        paving_base:   3500,
+        paving_surface: 6000,
+        tack_coat:    10000,
+    }
+};
+
+// ============================================
+// HISTORICAL BENCHMARKS ($/SY)
+// HeavyBid clean_standard_rate for parking lot
+// WisDOT FY2024 Average Unit Price List for roadway
+// ============================================
+
+export const BENCHMARKS = {
+    parking_lot: {
+        excavation:     { p25: 22.99, median: 29.34, p75: 36.25, n: 19,  basis: 'empirical' },
+        fine_grading:   { p25:  0.77, median:  0.92, p75:  1.12, n: 507, basis: 'empirical' },
+        dga_base:       { p25:  6.56, median:  7.38, p75:  8.29, n: 103, basis: 'empirical' },
+        milling:        { p25:  2.95, median:  3.64, p75:  4.58, n: 516, basis: 'empirical' },
+        paving_base:    { p25: 22.31, median: 28.10, p75: 35.26, n: 162, basis: 'empirical' },
+        paving_surface: { p25: 10.30, median: 11.09, p75: 12.25, n: 163, basis: 'empirical' },
+        tack_coat:      { p25:  0.15, median:  0.22, p75:  0.35, n: 0,   basis: 'derived' },
+    },
+    roadway: {
+        excavation:     { p25:  9.00, median: 12.00, p75: 18.00, n: 0, basis: 'derived' },
+        fine_grading:   { p25:  0.60, median:  0.85, p75:  1.20, n: 0, basis: 'derived' },
+        dga_base:       { p25:  4.50, median:  6.00, p75:  8.50, n: 0, basis: 'derived' },
+        milling:        { p25:  1.50, median:  1.82, p75:  2.50, n: 0, basis: 'derived' },
+        paving_base:    { p25:  8.00, median: 11.50, p75: 16.00, n: 0, basis: 'derived' },
+        paving_surface: { p25:  6.00, median:  8.50, p75: 12.00, n: 0, basis: 'derived' },
+        tack_coat:      { p25:  0.10, median:  0.18, p75:  0.30, n: 0, basis: 'derived' },
+    }
+};
+
+// ============================================
+// QUANTITY RANGES (SY) — typical job sizes
+// ============================================
+
+export const QTY_RANGES = {
+    parking_lot: {
+        excavation:     { low:   50, high:  2000 },
+        fine_grading:   { low:  500, high: 15000 },
+        dga_base:       { low:  200, high: 12000 },
+        milling:        { low:  500, high: 20000 },
+        paving_base:    { low:  200, high: 12000 },
+        paving_surface: { low:  500, high: 25000 },
+        tack_coat:      { low:  500, high: 25000 },
+    },
+    roadway: {
+        excavation:     { low:  200, high: 10000 },
+        fine_grading:   { low: 2000, high: 50000 },
+        dga_base:       { low: 1000, high: 30000 },
+        milling:        { low: 2000, high: 80000 },
+        paving_base:    { low: 1000, high: 30000 },
+        paving_surface: { low: 2000, high: 80000 },
+        tack_coat:      { low: 2000, high: 80000 },
+    }
+};
+
+// ============================================
+// RATE CONFIDENCE — per-activity production rate reliability
+// band: ± percentage, score: 0-1 base confidence
+// ============================================
+
+export const RATE_CONFIDENCE = {
+    excavation:     { band: 35, score: 0.65 },
+    fine_grading:   { band: 15, score: 0.85 },
+    dga_base:       { band: 25, score: 0.75 },
+    milling:        { band: 15, score: 0.85 },
+    paving_base:    { band: 20, score: 0.80 },
+    paving_surface: { band: 15, score: 0.85 },
+    tack_coat:      { band: 10, score: 0.90 },
+};
+
+// ============================================
+// CREW DATA — from HeavyBid "all paving crew compositions.txt"
+// ============================================
+
+export const CREW_DATA = {
+    BHOEX:  { rate: 203.65, people: 3,  desc: 'Backhoe Excavation',      activities: ['excavation'] },
+    DGAFG:  { rate: 241.00, people: 4,  desc: 'DGA/Fine Grade w/ Grader', activities: ['fine_grading', 'dga_base'] },
+    DGAST:  { rate: 184.00, people: 4,  desc: 'DGA/Fine Grade w/ Dozer',  activities: ['fine_grading', 'dga_base'] },
+    FLEX3:  { rate: 200.78, people: 3,  desc: 'Flex Pave Crew 3-Man',     activities: ['paving_base', 'paving_surface'] },
+    FLEX5:  { rate: 271.48, people: 5,  desc: 'Flex Pave Crew 5-Man',     activities: ['paving_base', 'paving_surface'] },
+    PV8:    { rate: 400.75, people: 8,  desc: 'Paving Crew 8-Man',        activities: ['paving_base', 'paving_surface'] },
+    PV10:   { rate: 471.85, people: 10, desc: 'Paving Crew 10-Man',       activities: ['paving_base', 'paving_surface'] },
+    ML7:    { rate: 648.83, people: 8,  desc: 'Milling Crew 7ft',         activities: ['milling'] },
+    COMBO:  { rate: 564.28, people: 11, desc: 'Mill + Pave Combo',        activities: ['milling', 'paving_base', 'paving_surface'] },
+    TACK:   { rate:  61.35, people: 1,  desc: 'Tack Coat',                activities: ['tack_coat'] },
+    MOBL:   { rate: 297.25, people: 2,  desc: 'Mobilization (2 Lowboys)', activities: [] },
+    MOBS:   { rate: 188.73, people: 1,  desc: 'Mobilization (1 Lowboy)',  activities: [] },
+    SAFE:   { rate: 130.39, people: 1,  desc: 'Safety / Traffic Control', activities: [] },
+};
+
+// ============================================
+// CREW AUTO-SELECTION THRESHOLDS (total job SY)
+// ============================================
+
+export const CREW_THRESHOLDS = {
+    paving: [
+        { maxSY:   200,      crew: 'FLEX3' },
+        { maxSY:  1000,      crew: 'FLEX5' },
+        { maxSY:  5000,      crew: 'PV8' },
+        { maxSY: Infinity,   crew: 'PV10' },
+    ],
+    milling: [
+        { maxSY: Infinity,   crew: 'ML7' },
+    ],
+    excavation: [
+        { maxSY: Infinity,   crew: 'BHOEX' },
+    ],
+    fine_grading: [
+        { maxSY: Infinity,   crew: 'DGAFG' },
+    ],
+    dga_base: [
+        { maxSY: Infinity,   crew: 'DGAFG' },
+    ],
+    tack_coat: [
+        { maxSY: Infinity,   crew: 'TACK' },
+    ],
+};
+
+// ============================================
+// CREW CLUSTERS — shared mobilization groupings
+// ============================================
+
+export const CREW_CLUSTERS = {
+    earthwork: {
+        activities: ['excavation', 'fine_grading', 'dga_base'],
+        mobCrew: 'MOBS',
+        desc: 'Earthwork',
+    },
+    milling: {
+        activities: ['milling'],
+        mobCrew: 'MOBL',
+        desc: 'Milling',
+    },
+    paving: {
+        activities: ['paving_base', 'paving_surface', 'tack_coat'],
+        mobCrew: 'MOBL',
+        desc: 'Paving',
+    },
+    combo: {
+        activities: ['milling', 'paving_base', 'paving_surface', 'tack_coat'],
+        mobCrew: 'MOBL',
+        desc: 'Mill + Pave Combo',
+    },
+};
+
+// ============================================
+// SCOPE EXCLUSIONS/ASSUMPTIONS CHECKLIST
+// ============================================
+
+export const SCOPE_ITEMS = [
+    { id: 'sawcutting',      name: 'Sawcutting',                        default: 'included' },
+    { id: 'barricading',     name: 'Barricading / Coning',              default: 'included' },
+    { id: 'hauling',         name: 'Material Hauling & Delivery',       default: 'included' },
+    { id: 'traffic_control', name: 'Traffic Control (Flagging/MOT)',    default: 'excluded' },
+    { id: 'permits',         name: 'Permits & Fees',                    default: 'excluded' },
+    { id: 'survey',          name: 'Survey / Layout / Staking',         default: 'excluded' },
+    { id: 'testing',         name: 'Quality Testing / Nuclear Gauge',   default: 'excluded' },
+    { id: 'disposal',        name: 'Off-site Disposal',                 default: 'excluded' },
+    { id: 'premium',         name: 'Night / Weekend Premium',           default: 'excluded' },
+    { id: 'temp_markings',   name: 'Temporary Pavement Markings',       default: 'excluded' },
+    { id: 'concrete',        name: 'Concrete Work (Curb/Sidewalk)',     default: 'excluded' },
+    { id: 'landscaping',     name: 'Landscaping Restoration',           default: 'excluded' },
+    { id: 'utilities',       name: 'Utility Adjustments',               default: 'excluded' },
+    { id: 'geotextile',      name: 'Geotextile / Fabric',              default: 'excluded' },
+];
+
+// ============================================
+// CONFIDENCE WEIGHTS
+// ============================================
+
+export const CONFIDENCE_WEIGHTS = {
+    productionReliability: 0.35,
+    benchmarkAlignment:    0.30,
+    scopeDefinition:       0.20,
+    dataQuality:           0.15,
+};
+
+// ============================================
+// THREE-TIER MULTIPLIERS
+// ============================================
+
+export const TIER_MULTIPLIERS = {
+    conservative: 0.80,
+    standard:     1.00,
+    aggressive:   1.20,
+};
+
+// ============================================
 // DEFAULT PAVING DEPENDENCIES
 // Standard paving sequence (Tier 3.1)
 // ============================================

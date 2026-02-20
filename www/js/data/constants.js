@@ -25,6 +25,53 @@ export const CONSTANTS = {
     SF_PER_SY: 9                // Square feet per square yard
 };
 
+// ============================================
+// Material Prices (from HeavyBid Material Codebook)
+// ============================================
+
+export const MATERIAL_PRICES = {
+    // HMA mix prices — WRE Jan 2025 (AC base $553 + freight $3.18)
+    hma_9_5_64:     61.06,  // $/TON — 9.5mm-64 Surface Course
+    hma_19_64:      58.06,  // $/TON — 19mm-64 Base Course
+    hma_9_5_76:     68.41,  // $/TON — 9.5mm-76 polymer modified surface
+    hma_19_76:      65.41,  // $/TON — 19mm-76 polymer modified base
+    hma_12_5_64:    59.06,  // $/TON — 12.5mm-64
+    hma_25_64:      55.06,  // $/TON — 25mm-64
+
+    // Aggregate
+    dga:            20.25,  // $/TON — Dense Graded Aggregate (WRE 2024)
+    dga_rap:        14.00,  // $/TON — DGA/RAP blend
+
+    // Tack coat
+    tack_std:        3.75,  // $/GAL — standard tack
+    tack_64:         4.25,  // $/GAL — 64-22 tack
+    tack_76:         6.50,  // $/GAL — 76-22 tack
+
+    // Disposal
+    disposal_asphalt:   7.50,  // $/TON — broken asphalt
+    disposal_concrete:  7.50,  // $/TON — broken concrete
+    disposal_mixed:    25.00,  // $/TON — mixed debris
+
+    // Consumables
+    milling_teeth:      0.15,  // $/SY — milling teeth wear
+
+    // Plant opening fees
+    plant_open_weekday: 1500,  // $ — WRE Mon-Sat
+    plant_open_sunday:  3500,  // $ — WRE Sunday
+    plant_open_silo:     400,  // $ — silo dump
+};
+
+// ============================================
+// Shift Optimization Constants
+// ============================================
+
+export const SHIFT_CONSTANTS = {
+    BILLING_INCREMENTS: [4, 6, 8, 10, 12],
+    HUSTLE_THRESHOLD: 0.5,  // hours — snap down if overshoot ≤ this
+    MIN_SHIFT: 4,
+    MAX_SHIFT: 12,
+};
+
 // Source documentation for auditability (Tier 6.3)
 export const CONSTANT_SOURCES = {
     HMA_DENSITY:  { value: 145, unit: 'lbs/ft³', source: 'Asphalt Institute', note: 'Compacted HMA, varies 140-150 by mix design' },

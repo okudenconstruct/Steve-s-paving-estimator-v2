@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paving Estimating Calculator 3.0</title>
+    <title>Paving Estimating Calculator 4.0</title>
     <!-- Fonts bundled locally for offline use -->
     <style>
         @font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 400; font-display: swap; src: url('fonts/ibm-plex-sans-latin-400-normal.woff2') format('woff2'); }
@@ -26,7 +26,7 @@
                     <div class="logo-icon">P</div>
                     <div class="logo-text">
                         <h1>Paving Estimating Calculator</h1>
-                        <span>v3.0 • Rubric-Compliant Engine</span>
+                        <span>v4.0 • HeavyBid + WisDOT Calibrated</span>
                     </div>
                 </div>
             </div>
@@ -41,12 +41,18 @@
                 <button class="btn btn-primary" onclick="calculateAll()">
                     <span>⚡</span> Calculate
                 </button>
-                <button class="btn btn-secondary" onclick="exportResults()">
-                    <span>📋</span> Export
-                </button>
-                <button class="btn btn-secondary" onclick="window.print()">
-                    <span>🖨️</span> Print
-                </button>
+                <div class="export-dropdown">
+                    <button class="btn btn-secondary" onclick="exportResults('full')">
+                        <span>📋</span> Export
+                    </button>
+                    <button class="btn btn-secondary btn-small export-menu-btn" onclick="toggleExportMenu()">▼</button>
+                    <div class="export-menu" id="exportMenu">
+                        <button onclick="exportResults('quick')">Quick Summary</button>
+                        <button onclick="exportResults('full')">Full Report</button>
+                        <button onclick="exportResults('json')">JSON Download</button>
+                        <button onclick="exportResults('print')">Print / PDF</button>
+                    </div>
+                </div>
                 <button class="btn btn-danger" onclick="resetForm()">
                     <span>↺</span> Reset
                 </button>
@@ -57,6 +63,45 @@
         <div class="project-info">
             <label>Project Name</label>
             <input type="text" id="projectName" placeholder="Enter project name...">
+        </div>
+
+        <!-- Job Mode & Shift Settings (v4.0) -->
+        <div class="job-mode-panel">
+            <div class="job-mode-toggle">
+                <label class="toggle-label">Job Mode</label>
+                <div class="toggle-pills">
+                    <button class="pill active" id="pillParkingLot" onclick="setJobMode('parking_lot')">Parking Lot</button>
+                    <button class="pill" id="pillRoadway" onclick="setJobMode('roadway')">Roadway</button>
+                </div>
+            </div>
+            <div class="shift-settings">
+                <div class="setting-group compact">
+                    <label>Std Shift</label>
+                    <select id="stdShift" onchange="autoCalcCheck()">
+                        <option value="8" selected>8h</option>
+                        <option value="10">10h</option>
+                    </select>
+                </div>
+                <div class="setting-group compact">
+                    <label>Max Shift</label>
+                    <select id="maxShift" onchange="autoCalcCheck()">
+                        <option value="10">10h</option>
+                        <option value="12" selected>12h</option>
+                    </select>
+                </div>
+                <div class="setting-group compact">
+                    <label>Weather Days</label>
+                    <input type="number" id="weatherDays" value="2" min="0" max="30" style="width: 50px;" oninput="autoCalcCheck()">
+                </div>
+                <div class="setting-group compact">
+                    <label>Travel (hrs)</label>
+                    <input type="number" id="travelHours" value="1" min="0.5" max="8" step="0.5" style="width: 50px;" oninput="autoCalcCheck()">
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="clusterMode" checked onchange="autoCalcCheck()">
+                    <label for="clusterMode">Crew Clustering</label>
+                </div>
+            </div>
         </div>
 
         <!-- Rate Configuration Panel -->
@@ -720,6 +765,136 @@
         <!-- Validation Panel -->
         <div id="validationPanel" class="validation-panel" style="display: none;"></div>
 
+        <!-- Estimate Confidence (v4.0) -->
+        <div class="confidence-panel" id="confidencePanel" style="display: none;">
+            <div class="confidence-header">
+                <h3>Estimate Confidence</h3>
+                <div class="confidence-badge" id="confidenceBadge">--</div>
+            </div>
+            <div class="confidence-bars">
+                <div class="conf-bar-row">
+                    <span class="conf-label">Production Reliability (35%)</span>
+                    <div class="conf-bar"><div class="conf-fill" id="confBarProd" style="width: 0%;"></div></div>
+                    <span class="conf-score" id="confScoreProd">0%</span>
+                </div>
+                <div class="conf-bar-row">
+                    <span class="conf-label">Benchmark Alignment (30%)</span>
+                    <div class="conf-bar"><div class="conf-fill" id="confBarBench" style="width: 0%;"></div></div>
+                    <span class="conf-score" id="confScoreBench">0%</span>
+                </div>
+                <div class="conf-bar-row">
+                    <span class="conf-label">Scope Definition (20%)</span>
+                    <div class="conf-bar"><div class="conf-fill" id="confBarScope" style="width: 0%;"></div></div>
+                    <span class="conf-score" id="confScoreScope">0%</span>
+                </div>
+                <div class="conf-bar-row">
+                    <span class="conf-label">Data Quality (15%)</span>
+                    <div class="conf-bar"><div class="conf-fill" id="confBarData" style="width: 0%;"></div></div>
+                    <span class="conf-score" id="confScoreData">0%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Unit Cost Reasonableness Check (v4.0) -->
+        <div class="unit-check-panel" id="unitCheckPanel" style="display: none;">
+            <h3>Unit Cost Reasonableness Check</h3>
+            <table class="unit-check-table">
+                <thead>
+                    <tr>
+                        <th>Activity</th>
+                        <th>$/SY</th>
+                        <th>P25</th>
+                        <th>Median</th>
+                        <th>P75</th>
+                        <th>n</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="unitCheckBody"></tbody>
+            </table>
+        </div>
+
+        <!-- Job Analysis (v4.0) -->
+        <div class="analysis-panel" id="analysisPanel" style="display: none;">
+            <h3>Job Analysis</h3>
+            <div class="analysis-list" id="analysisList"></div>
+        </div>
+
+        <!-- Mobilization & Safety (v4.0) -->
+        <div class="mob-safety-panel" id="mobSafetyPanel" style="display: none;">
+            <h3>Mobilization & Safety</h3>
+            <div class="mob-table-wrapper">
+                <table class="mob-table">
+                    <thead>
+                        <tr>
+                            <th>Cluster</th>
+                            <th>Activities</th>
+                            <th>Mob Crew</th>
+                            <th>Trips</th>
+                            <th>Travel</th>
+                            <th>Cost</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mobTableBody"></tbody>
+                </table>
+            </div>
+            <div class="mob-safety-totals">
+                <div class="cost-line"><span class="label">Mobilization Total</span><span class="value" id="mobTotalDisplay">$0</span></div>
+                <div class="cost-line" id="safetyLine" style="display: none;"><span class="label">Safety / TC Crew</span><span class="value" id="safetyTotalDisplay">$0</span></div>
+                <div class="cost-line subtotal"><span class="label">Mob + Safety Total</span><span class="value" id="mobSafetyTotalDisplay">$0</span></div>
+            </div>
+        </div>
+
+        <!-- Calendar Duration (v4.0) -->
+        <div class="calendar-panel" id="calendarPanel" style="display: none;">
+            <h3>Calendar Duration</h3>
+            <div class="calendar-stats">
+                <div class="cal-stat"><span class="label">Work Days</span><span class="value" id="calWorkDays">0</span></div>
+                <div class="cal-stat"><span class="label">Weather Days</span><span class="value" id="calWeatherDays">0</span></div>
+                <div class="cal-stat total"><span class="label">Total Days</span><span class="value" id="calTotalDays">0</span></div>
+            </div>
+            <div class="calendar-timeline" id="calendarTimeline"></div>
+        </div>
+
+        <!-- Scope Exclusions & Assumptions (v4.0) -->
+        <div class="panel-wrapper">
+            <button class="panel-toggle" onclick="togglePanel(this, 'scopeContent')">
+                <span>Scope Exclusions & Assumptions</span>
+                <span class="arrow">▼</span>
+            </button>
+            <div class="panel-content" id="scopeContent">
+                <div class="scope-grid" id="scopeGrid"></div>
+            </div>
+        </div>
+
+        <!-- Reviewer Notes (v4.0) -->
+        <div class="panel-wrapper">
+            <button class="panel-toggle" onclick="togglePanel(this, 'notesContent')">
+                <span>Reviewer Notes</span>
+                <span class="arrow">▼</span>
+            </button>
+            <div class="panel-content" id="notesContent">
+                <div class="notes-grid" id="notesGrid">
+                    <div class="note-item">
+                        <label>General Notes</label>
+                        <textarea id="noteGeneral" rows="3" placeholder="Overall estimate notes..."></textarea>
+                    </div>
+                    <div class="note-item">
+                        <label>Pricing Assumptions</label>
+                        <textarea id="notePricing" rows="3" placeholder="Material pricing basis, escalation assumptions..."></textarea>
+                    </div>
+                    <div class="note-item">
+                        <label>Schedule Constraints</label>
+                        <textarea id="noteSchedule" rows="3" placeholder="Phasing, access restrictions, night work..."></textarea>
+                    </div>
+                    <div class="note-item">
+                        <label>Risk & Contingency</label>
+                        <textarea id="noteRisk" rows="3" placeholder="Key risks, mitigation, contingency basis..."></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Indirect Costs Panel -->
         <div class="panel-wrapper">
             <button class="panel-toggle" onclick="togglePanel(this, 'indirectContent')">
@@ -1069,8 +1244,8 @@
 
         <!-- Footer -->
         <footer class="footer">
-            <p>Paving Estimating Calculator v3.0 • Rubric-Compliant CPM Engine</p>
-            <p style="margin-top: 0.5rem;">Sources: Wisconsin DOT (2022), Asphalt Institute, FHWA, Caterpillar</p>
+            <p>Paving Estimating Calculator v4.0 • HeavyBid + WisDOT Calibrated</p>
+            <p style="margin-top: 0.5rem;">Sources: HeavyBid Historical Data, WisDOT FY2024, Asphalt Institute, FHWA</p>
         </footer>
     </div>
 

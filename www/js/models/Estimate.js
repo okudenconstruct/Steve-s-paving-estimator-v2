@@ -31,7 +31,15 @@ export class Estimate {
         indirectCosts = new IndirectCosts(),
         riskRegister = new RiskRegister(),
         projectSettings = {},
-        rateLibrary = {}
+        rateLibrary = {},
+        // v4.0 additions
+        jobMode = 'parking_lot',
+        shiftSettings = { stdShift: 8, maxShift: 12 },
+        weatherDays = 2,
+        travelHours = 1,
+        clusterMode = true,
+        scopeAssumptions = {},
+        reviewerNotes = {},
     } = {}) {
         this.id = id || this._generateId();
         this.projectName = projectName;
@@ -48,8 +56,21 @@ export class Estimate {
         this.projectSettings = projectSettings;
         this.rateLibrary = rateLibrary;
 
+        // v4.0 additions
+        this.jobMode = jobMode;
+        this.shiftSettings = shiftSettings;
+        this.weatherDays = weatherDays;
+        this.travelHours = travelHours;
+        this.clusterMode = clusterMode;
+        this.scopeAssumptions = scopeAssumptions;
+        this.reviewerNotes = reviewerNotes;
+
         // Calculated results (populated by Calculator)
         this.results = null;
+        this.confidenceScore = null;
+        this.analysisResults = null;
+        this.clusterResults = null;
+        this.calendarDuration = null;
     }
 
     _generateId() {
@@ -137,7 +158,15 @@ export class Estimate {
             indirectCosts: this.indirectCosts.toJSON(),
             riskRegister: this.riskRegister.toJSON(),
             projectSettings: this.projectSettings,
-            rateLibrary: this.rateLibrary
+            rateLibrary: this.rateLibrary,
+            // v4.0
+            jobMode: this.jobMode,
+            shiftSettings: this.shiftSettings,
+            weatherDays: this.weatherDays,
+            travelHours: this.travelHours,
+            clusterMode: this.clusterMode,
+            scopeAssumptions: this.scopeAssumptions,
+            reviewerNotes: this.reviewerNotes,
         };
     }
 }

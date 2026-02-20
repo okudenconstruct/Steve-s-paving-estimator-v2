@@ -1,5 +1,5 @@
 // ============================================
-// Estimate Storage
+// Estimate Storage v4.0
 // localStorage CRUD with versioning (Tier 6.1)
 // ============================================
 
@@ -7,7 +7,8 @@ const STORAGE_KEYS = {
     RATES: 'pavingCalcRates',           // Legacy rate storage key (backward compat)
     ESTIMATES: 'pavingCalcEstimates',    // Estimate index
     ESTIMATE_PREFIX: 'pavingCalcEst_',   // Per-estimate data
-    RATE_LIBRARY: 'pavingCalcRateLib'    // Master rate library
+    RATE_LIBRARY: 'pavingCalcRateLib',   // Master rate library
+    SETTINGS: 'pavingCalcSettings',      // v4.0 job mode, shift, etc.
 };
 
 export class EstimateStore {
@@ -49,6 +50,34 @@ export class EstimateStore {
             return true;
         } catch (e) {
             return false;
+        }
+    }
+
+    // ---- v4.0 Settings Persistence ----
+
+    /**
+     * Save v4.0 settings (job mode, shift, weather, travel, cluster mode).
+     */
+    saveSettings(settings) {
+        try {
+            localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+            return true;
+        } catch (e) {
+            console.warn('Failed to save settings:', e);
+            return false;
+        }
+    }
+
+    /**
+     * Load v4.0 settings.
+     */
+    loadSettings() {
+        try {
+            const saved = localStorage.getItem(STORAGE_KEYS.SETTINGS);
+            return saved ? JSON.parse(saved) : null;
+        } catch (e) {
+            console.warn('Failed to load settings:', e);
+            return null;
         }
     }
 
@@ -174,7 +203,8 @@ export class EstimateStore {
             projectName: estimate.projectName,
             version: estimate.version,
             lastModified: estimate.lastModified,
-            createdAt: estimate.createdAt
+            createdAt: estimate.createdAt,
+            jobMode: estimate.jobMode || 'parking_lot',
         };
 
         if (existing >= 0) {

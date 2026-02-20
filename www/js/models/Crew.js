@@ -115,4 +115,55 @@ export class Crew {
         crew._headcount = headcount;
         return crew;
     }
+
+    /**
+     * Create a crew from a CREW_DATA entry.
+     * @param {string} code - Crew code (e.g., "PV8")
+     * @param {Object} crewData - { rate, people, desc }
+     */
+    static fromCrewData(code, crewData) {
+        const crew = new Crew({
+            id: `C-${code}`,
+            name: crewData.desc,
+            compositeRate: crewData.rate,
+        });
+        crew._headcount = crewData.people;
+        return crew;
+    }
+
+    /**
+     * Auto-select crew based on job size (SY) and activity type.
+     * @param {number} totalSY - Total job size in SY
+     * @param {string} activityType - Activity type key
+     * @param {Object} thresholds - CREW_THRESHOLDS
+     * @param {Object} crewData - CREW_DATA
+     * @returns {{ code: string, crew: Crew } | null}
+     */
+    static autoSelect(totalSY, activityType, thresholds, crewData) {
+        const tiers = thresholds[activityType] || thresholds.paving;
+        if (!tiers) return null;
+
+        for (const tier of tiers) {
+            if (totalSY <= tier.maxSY) {
+                const data = crewData[tier.crew];
+                if (data) {
+                    return {
+                        code: tier.crew,
+                        crew: Crew.fromCrewData(tier.crew, data),
+                    };
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Detect if COMBO crew should be used (mill + pave both active).
+     * @param {Set<string>} activeTypes - Set of active activity types
+     * @returns {boolean}
+     */
+    static detectCombo(activeTypes) {
+        return activeTypes.has('milling') &&
+            (activeTypes.has('paving_base') || activeTypes.has('paving_surface'));
+    }
 }

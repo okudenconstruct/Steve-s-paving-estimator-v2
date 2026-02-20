@@ -37,6 +37,8 @@ export class Activity {
      * @param {Object} [params.trucking] - { cycleTime: number, truckCapacityUOMId, truckCapacity, efficiency }
      * @param {Array} [params.dependencies] - [{ predecessorId, type, lag, source }]
      * @param {string} [params.colorClass] - UI color class (e.g., "red", "blue")
+     * @param {string} [params.crewCode] - Named crew code from CREW_DATA (e.g., "PV8")
+     * @param {boolean} [params.crewAutoSelected] - Whether crew was auto-selected vs manual
      */
     constructor({
         id, description, wbsCode, activityType,
@@ -45,7 +47,9 @@ export class Activity {
         mobilization = { included: false, cost: 0 },
         trucking = null,
         dependencies = [],
-        colorClass = ''
+        colorClass = '',
+        crewCode = null,
+        crewAutoSelected = true
     }) {
         this.id = id;
         this.description = description;
@@ -60,6 +64,14 @@ export class Activity {
         this.trucking = trucking;
         this.dependencies = dependencies;
         this.colorClass = colorClass;
+
+        // v4.0 additions
+        this.crewCode = crewCode;
+        this.crewAutoSelected = crewAutoSelected;
+        this.threeTier = null;           // Populated by Calculator
+        this.clusterAssignment = null;   // Populated by ClusterEngine
+        this.materialBreakdown = null;   // Populated by Calculator (material cost detail)
+        this.reviewerNote = '';
 
         // Calculated results (populated by Calculator)
         this._results = null;
@@ -209,6 +221,15 @@ export class Activity {
         };
     }
 
+    /**
+     * Unit cost = directCost / grossQuantity ($/SY or $/CY).
+     */
+    get unitCost() {
+        const gq = this.quantity?.grossQuantity;
+        if (!gq || gq <= 0) return 0;
+        return this.directCost / gq;
+    }
+
     toJSON() {
         return {
             id: this.id,
@@ -226,7 +247,10 @@ export class Activity {
             mobilization: this.mobilization,
             trucking: this.trucking,
             dependencies: this.dependencies,
-            colorClass: this.colorClass
+            colorClass: this.colorClass,
+            crewCode: this.crewCode,
+            crewAutoSelected: this.crewAutoSelected,
+            reviewerNote: this.reviewerNote,
         };
     }
 }

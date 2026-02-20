@@ -96,6 +96,13 @@ export class Renderer {
 
         // ---- Validation ----
         Renderer._renderValidation(results.validationWarnings || []);
+
+        // ---- v4.0 panels ----
+        Renderer._renderConfidence(results.confidenceScore);
+        Renderer._renderUnitChecks(results.unitChecks);
+        Renderer._renderAnalysis(results.analysisResults);
+        Renderer._renderMobSafety(results.clusterResults);
+        Renderer._renderCalendar(results.calendarDuration);
     }
 
     static _renderActivityOutputs(ar) {
@@ -321,6 +328,170 @@ export class Renderer {
             div.appendChild(icon);
             div.appendChild(msg);
             panel.appendChild(div);
+        }
+    }
+
+    // ---- v4.0 Render Methods ----
+
+    static _renderConfidence(conf) {
+        const panel = document.getElementById('confidencePanel');
+        if (!panel || !conf || conf.composite === 0) { if (panel) panel.style.display = 'none'; return; }
+
+        panel.style.display = 'block';
+        const badge = document.getElementById('confidenceBadge');
+        if (badge) {
+            badge.textContent = `${(conf.composite * 100).toFixed(0)}% ${conf.descriptor}`;
+            badge.className = 'confidence-badge conf-' + conf.descriptor.toLowerCase().replace('-', '');
+        }
+
+        const bars = [
+            { id: 'Prod', score: conf.prodReliability?.score },
+            { id: 'Bench', score: conf.benchAlignment?.score },
+            { id: 'Scope', score: conf.scopeDefinition?.score },
+            { id: 'Data', score: conf.dataQuality?.score },
+        ];
+        for (const b of bars) {
+            const fill = document.getElementById(`confBar${b.id}`);
+            const label = document.getElementById(`confScore${b.id}`);
+            if (fill) fill.style.width = `${(b.score || 0) * 100}%`;
+            if (label) label.textContent = `${((b.score || 0) * 100).toFixed(0)}%`;
+        }
+    }
+
+    static _renderUnitChecks(checks) {
+        const panel = document.getElementById('unitCheckPanel');
+        const tbody = document.getElementById('unitCheckBody');
+        if (!panel || !tbody) return;
+
+        if (!checks || checks.length === 0) { panel.style.display = 'none'; return; }
+
+        panel.style.display = 'block';
+        tbody.innerHTML = '';
+        const fc = Renderer.formatCurrency;
+
+        for (const c of checks) {
+            const tr = document.createElement('tr');
+            tr.className = 'uc-' + c.status.toLowerCase().replace('_', '-');
+            tr.innerHTML = `
+                <td>${c.description}</td>
+                <td>${c.unitCost.toFixed(2)}</td>
+                <td>${c.p25.toFixed(2)}</td>
+                <td>${c.median.toFixed(2)}</td>
+                <td>${c.p75.toFixed(2)}</td>
+                <td>${c.n}</td>
+                <td><span class="uc-badge uc-${c.status.toLowerCase().replace('_', '-')}">${c.status.replace('_', ' ')}</span></td>
+            `;
+            tbody.appendChild(tr);
+        }
+    }
+
+    static _renderAnalysis(observations) {
+        const panel = document.getElementById('analysisPanel');
+        const list = document.getElementById('analysisList');
+        if (!panel || !list) return;
+
+        if (!observations || observations.length === 0) { panel.style.display = 'none'; return; }
+
+        panel.style.display = 'block';
+        list.innerHTML = '';
+
+        for (const obs of observations) {
+            const card = document.createElement('div');
+            card.className = `analysis-card analysis-${obs.status.toLowerCase()}`;
+
+            const icon = obs.status === 'WARNING' ? '⚠' : 'ℹ';
+            let html = `<div class="analysis-header"><span class="analysis-icon">${icon}</span><span class="analysis-msg">${obs.message}</span></div>`;
+
+            if (obs.reasons && obs.reasons.length > 0) {
+                html += '<ul class="analysis-reasons">';
+                for (const r of obs.reasons) html += `<li>${r}</li>`;
+                html += '</ul>';
+            }
+
+            card.innerHTML = html;
+            list.appendChild(card);
+        }
+    }
+
+    static _renderMobSafety(clusterResults) {
+        const panel = document.getElementById('mobSafetyPanel');
+        if (!panel) return;
+
+        if (!clusterResults || clusterResults.clusters.length === 0) { panel.style.display = 'none'; return; }
+
+        panel.style.display = 'block';
+        const fc = Renderer.formatCurrency;
+        const sv = Renderer.setVal;
+
+        // Table body
+        const tbody = document.getElementById('mobTableBody');
+        if (tbody) {
+            tbody.innerHTML = '';
+            for (const c of clusterResults.clusters) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${c.desc}</td>
+                    <td>${c.activities.join(', ').replace(/_/g, ' ')}</td>
+                    <td>${c.mobCrew}</td>
+                    <td>${c.trips || 2}</td>
+                    <td>${c.travelHours || 0}h</td>
+                    <td>${fc(c.mobCost)}</td>
+                `;
+                tbody.appendChild(tr);
+            }
+        }
+
+        sv('mobTotalDisplay', fc(clusterResults.totalMobCost || 0));
+
+        const safetyLine = document.getElementById('safetyLine');
+        if (safetyLine) {
+            if (clusterResults.safetyCost > 0) {
+                safetyLine.style.display = 'flex';
+                sv('safetyTotalDisplay', fc(clusterResults.safetyCost));
+            } else {
+                safetyLine.style.display = 'none';
+            }
+        }
+
+        sv('mobSafetyTotalDisplay', fc(clusterResults.totalMobAndSafety || 0));
+    }
+
+    static _renderCalendar(cal) {
+        const panel = document.getElementById('calendarPanel');
+        if (!panel) return;
+
+        if (!cal || cal.totalDays === 0) { panel.style.display = 'none'; return; }
+
+        panel.style.display = 'block';
+        const sv = Renderer.setVal;
+        sv('calWorkDays', cal.workDays);
+        sv('calWeatherDays', cal.weatherDays);
+        sv('calTotalDays', cal.totalDays);
+
+        const timeline = document.getElementById('calendarTimeline');
+        if (!timeline) return;
+        timeline.innerHTML = '';
+
+        for (const day of cal.timeline) {
+            const block = document.createElement('div');
+            block.className = `cal-day cal-${day.type}`;
+            block.title = day.type === 'weather' ? `Day ${day.day}: Weather contingency` :
+                `Day ${day.day}: ${day.activities.map(a => a.description).join(', ')}`;
+
+            const label = document.createElement('span');
+            label.className = 'cal-day-label';
+            label.textContent = day.day;
+            block.appendChild(label);
+
+            if (day.activities.length > 0) {
+                for (const a of day.activities) {
+                    const dot = document.createElement('span');
+                    dot.className = `cal-dot ${a.colorClass}`;
+                    block.appendChild(dot);
+                }
+            }
+
+            timeline.appendChild(block);
         }
     }
 }

@@ -1,7 +1,10 @@
 // ============================================
 // Tier 5.3 — Estimate Validation
 // Automated checks against rubric axioms and industry norms
+// v4.0: Added benchmark, quantity range, crew, mob, and roadway checks
 // ============================================
+
+import { BENCHMARKS, QTY_RANGES } from '../data/paving-defaults.js';
 
 export class Validator {
     /**
@@ -32,6 +35,21 @@ export class Validator {
 
         // ---- 6. Axiom violations ----
         this._checkAxioms(results, estimate, warnings);
+
+        // ---- 7. Benchmark alignment (v4.0) ----
+        this._checkBenchmarks(results, estimate, warnings);
+
+        // ---- 8. Quantity ranges (v4.0) ----
+        this._checkQuantityRanges(results, estimate, warnings);
+
+        // ---- 9. Crew mismatch (v4.0) ----
+        this._checkCrewMismatch(results, warnings);
+
+        // ---- 10. Mobilization sanity (v4.0) ----
+        this._checkMobilization(results, warnings);
+
+        // ---- 11. Roadway mode checks (v4.0) ----
+        this._checkRoadwayMode(results, estimate, warnings);
 
         return warnings;
     }
@@ -178,6 +196,110 @@ export class Validator {
                 message: 'No contingency or risk items defined. Every estimate carries uncertainty (Axiom 7).',
                 axiom: 7
             });
+        }
+    }
+
+    _checkBenchmarks(results, estimate, warnings) {
+        const benchmarks = BENCHMARKS[estimate.jobMode] || BENCHMARKS.parking_lot;
+
+        for (const ar of results.activities) {
+            if (ar.duration <= 0 || !ar.unitCost) continue;
+            const bm = benchmarks[ar.activityType];
+            if (!bm) continue;
+
+            if (ar.unitCost > bm.p75 * 1.5) {
+                warnings.push({
+                    level: 'warning', check: 'benchmark',
+                    message: `${ar.description}: $${ar.unitCost.toFixed(2)}/SY is significantly above P75 ($${bm.p75.toFixed(2)}).`,
+                    axiom: null
+                });
+            } else if (ar.unitCost < bm.p25 * 0.5) {
+                warnings.push({
+                    level: 'warning', check: 'benchmark',
+                    message: `${ar.description}: $${ar.unitCost.toFixed(2)}/SY is significantly below P25 ($${bm.p25.toFixed(2)}).`,
+                    axiom: null
+                });
+            }
+        }
+    }
+
+    _checkQuantityRanges(results, estimate, warnings) {
+        const ranges = QTY_RANGES[estimate.jobMode] || QTY_RANGES.parking_lot;
+
+        for (const ar of results.activities) {
+            if (ar.duration <= 0) continue;
+            const range = ranges[ar.activityType];
+            if (!range) continue;
+
+            if (ar.grossQuantity < range.low) {
+                warnings.push({
+                    level: 'info', check: 'qty_range',
+                    message: `${ar.description}: ${ar.grossQuantity.toLocaleString()} is below typical ${estimate.jobMode.replace('_', ' ')} range (${range.low.toLocaleString()}-${range.high.toLocaleString()}).`,
+                    axiom: null
+                });
+            }
+            if (ar.grossQuantity > range.high) {
+                warnings.push({
+                    level: 'info', check: 'qty_range',
+                    message: `${ar.description}: ${ar.grossQuantity.toLocaleString()} exceeds typical ${estimate.jobMode.replace('_', ' ')} range (max ${range.high.toLocaleString()}).`,
+                    axiom: null
+                });
+            }
+        }
+    }
+
+    _checkCrewMismatch(results, warnings) {
+        for (const ar of results.activities) {
+            if (ar.duration <= 0 || ar.crewAutoSelected !== false) continue;
+            // Manual override — just note it
+            warnings.push({
+                level: 'info', check: 'crew',
+                message: `${ar.description}: Crew manually set to ${ar.crewCode || 'custom'} (auto-selection overridden).`,
+                axiom: null
+            });
+        }
+    }
+
+    _checkMobilization(results, warnings) {
+        if (!results.clusterResults || !results.clusterResults.totalMobCost) return;
+
+        const dc = results.directCostTotal;
+        if (dc <= 0) return;
+
+        const mobPct = results.clusterResults.totalMobCost / dc;
+        if (mobPct > 0.15) {
+            warnings.push({
+                level: 'warning', check: 'mobilization',
+                message: `Mobilization at ${(mobPct * 100).toFixed(1)}% of direct cost (typical: 3-10%). Check travel hours.`,
+                axiom: null
+            });
+        }
+    }
+
+    _checkRoadwayMode(results, estimate, warnings) {
+        if (estimate.jobMode !== 'roadway') return;
+
+        // Check for safety crew
+        if (!results.clusterResults || results.clusterResults.safetyCost <= 0) {
+            warnings.push({
+                level: 'warning', check: 'roadway',
+                message: 'Roadway mode active but no safety/TC crew cost included.',
+                axiom: null
+            });
+        }
+
+        // Check for parking-lot-scale quantities on roadway
+        const parkingRanges = QTY_RANGES.parking_lot;
+        for (const ar of results.activities) {
+            if (ar.duration <= 0) continue;
+            const range = parkingRanges[ar.activityType];
+            if (range && ar.grossQuantity > 0 && ar.grossQuantity < range.low) {
+                warnings.push({
+                    level: 'info', check: 'roadway',
+                    message: `${ar.description}: Quantity (${ar.grossQuantity.toLocaleString()}) seems small for roadway work. Verify job mode.`,
+                    axiom: null
+                });
+            }
         }
     }
 }
