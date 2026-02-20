@@ -82,7 +82,7 @@ export const EFFICIENCY_OPTIONS = [
 
 // ============================================
 // DUAL-MODE PRODUCTION RATES (SY/day)
-// Parking Lot: from HeavyBid production data medians
+// Parking Lot: from historical production data medians
 // Roadway: from WisDOT Production Rate Table
 // ============================================
 
@@ -109,7 +109,7 @@ export const PRODUCTION_RATES = {
 
 // ============================================
 // HISTORICAL BENCHMARKS ($/SY)
-// HeavyBid clean_standard_rate for parking lot
+// Historical bid data for parking lot
 // WisDOT FY2024 Average Unit Price List for roadway
 // ============================================
 
@@ -175,7 +175,7 @@ export const RATE_CONFIDENCE = {
 };
 
 // ============================================
-// CREW DATA — from HeavyBid "all paving crew compositions.txt"
+// CREW DATA — standard paving crew compositions
 // ============================================
 
 export const CREW_DATA = {

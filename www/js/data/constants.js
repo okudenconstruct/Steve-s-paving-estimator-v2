@@ -26,11 +26,11 @@ export const CONSTANTS = {
 };
 
 // ============================================
-// Material Prices (from HeavyBid Material Codebook)
+// Material Prices (regional supplier quotes, Jan 2025)
 // ============================================
 
 export const MATERIAL_PRICES = {
-    // HMA mix prices — WRE Jan 2025 (AC base $553 + freight $3.18)
+    // HMA mix prices (AC base $553 + freight $3.18)
     hma_9_5_64:     61.06,  // $/TON — 9.5mm-64 Surface Course
     hma_19_64:      58.06,  // $/TON — 19mm-64 Base Course
     hma_9_5_76:     68.41,  // $/TON — 9.5mm-76 polymer modified surface
@@ -39,7 +39,7 @@ export const MATERIAL_PRICES = {
     hma_25_64:      55.06,  // $/TON — 25mm-64
 
     // Aggregate
-    dga:            20.25,  // $/TON — Dense Graded Aggregate (WRE 2024)
+    dga:            20.25,  // $/TON — Dense Graded Aggregate
     dga_rap:        14.00,  // $/TON — DGA/RAP blend
 
     // Tack coat
@@ -56,8 +56,8 @@ export const MATERIAL_PRICES = {
     milling_teeth:      0.15,  // $/SY — milling teeth wear
 
     // Plant opening fees
-    plant_open_weekday: 1500,  // $ — WRE Mon-Sat
-    plant_open_sunday:  3500,  // $ — WRE Sunday
+    plant_open_weekday: 1500,  // $ — Mon-Sat
+    plant_open_sunday:  3500,  // $ — Sunday
     plant_open_silo:     400,  // $ — silo dump
 };
 

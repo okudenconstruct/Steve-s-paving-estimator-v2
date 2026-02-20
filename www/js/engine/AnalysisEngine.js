@@ -127,7 +127,7 @@ export function generateAnalysis(snapshot) {
         if (!clusterResults || clusterResults.safetyCost <= 0) {
             add('global', 'SAFETY_MISSING', 'WARNING',
                 'Roadway mode active but no safety/traffic control crew cost included.',
-                ['WisDOT requires traffic control for roadway work', 'SAFE crew rate: $130.39/hr']);
+                ['WisDOT requires traffic control for roadway work', 'Consider adding safety/traffic control crew']);
         }
     }
 
