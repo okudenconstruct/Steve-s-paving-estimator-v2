@@ -87,6 +87,48 @@ function buildEstimateFromUI() {
     // Build each activity from UI inputs
     const activities = [];
 
+    // v4.0: Determine total job SY for crew auto-selection
+    // Use the largest paving/milling area as the sizing driver
+    const totalJobSY = Math.max(
+        getVal('millingArea') || 0,
+        getVal('baseArea') || 0,
+        getVal('surfaceArea') || 0,
+        getVal('excavationArea') || 0,
+        getVal('dgaArea') || 0,
+        getVal('fineGradingArea') || 0
+    );
+
+    // v4.0: Detect if COMBO crew should be used (milling + paving both active)
+    const activeTypes = new Set();
+    if (getVal('millingArea') > 0) activeTypes.add('milling');
+    if (getVal('baseArea') > 0) activeTypes.add('paving_base');
+    if (getVal('surfaceArea') > 0) activeTypes.add('paving_surface');
+    if (getVal('excavationArea') > 0) activeTypes.add('excavation');
+    if (getVal('fineGradingArea') > 0) activeTypes.add('fine_grading');
+    if (getVal('dgaArea') > 0) activeTypes.add('dga_base');
+    const useCombo = Crew.detectCombo(activeTypes);
+
+    /**
+     * v4.0: Smart crew selection — uses CREW_DATA auto-select when the user
+     * hasn't entered a manual crew rate; falls back to fromComposite when they have.
+     */
+    function selectCrew(activityType, manualRate, manualHeadcount, fallbackId, fallbackName) {
+        // If the user entered a manual crew rate, respect it
+        if (manualRate > 0) {
+            return Crew.fromComposite(fallbackId, fallbackName, manualRate, manualHeadcount);
+        }
+        // For milling/paving when COMBO is detected, use the COMBO crew
+        if (useCombo && (activityType === 'milling' || activityType === 'paving_base' || activityType === 'paving_surface')) {
+            const comboData = CREW_DATA['COMBO'];
+            if (comboData) return Crew.fromCrewData('COMBO', comboData);
+        }
+        // Auto-select based on job size
+        const result = Crew.autoSelect(totalJobSY, activityType, CREW_THRESHOLDS, CREW_DATA);
+        if (result) return result.crew;
+        // Ultimate fallback
+        return Crew.fromComposite(fallbackId, fallbackName, manualRate, manualHeadcount);
+    }
+
     // --- Excavation ---
     const excArea = getVal('excavationArea');
     const excDepth = getVal('excavationDepth');
@@ -104,7 +146,7 @@ function buildEstimateFromUI() {
         activityType: 'excavation',
         colorClass: excConfig.colorClass,
         quantity: new Quantity({ netQuantity: excQuantityData.netQuantity, uomId: 'CY', wasteFactor: 1.0, method: 'area×depth÷324', inputs: { area: excArea, depth: excDepth } }),
-        crew: Crew.fromComposite('C-EXC', 'Excavation Crew', rates.rateCrewExc, excCrewSize),
+        crew: selectCrew('excavation', rates.rateCrewExc, excCrewSize, 'C-EXC', 'Excavation Crew'),
         productionRate: excRateVal ? new ProductionRate({ id: 'PR-EXC', activityType: 'excavation', outputQty: excRateVal, outputUOMId: 'CY', source: 'User selected' }) : new ProductionRate({ id: 'PR-EXC', activityType: 'excavation', outputQty: 0, outputUOMId: 'CY' }),
         productivityFactor: productivity,
         mobilization: { included: isChecked('excMob'), cost: rates.mobExc },
@@ -131,7 +173,7 @@ function buildEstimateFromUI() {
         activityType: 'fine_grading',
         colorClass: 'purple',
         quantity: new Quantity({ netQuantity: fgArea, uomId: 'SY', wasteFactor: 1.0, method: 'direct area', inputs: { area: fgArea } }),
-        crew: Crew.fromComposite('C-FG', 'Fine Grading Crew', rates.rateCrewFG, fgCrewSize),
+        crew: selectCrew('fine_grading', rates.rateCrewFG, fgCrewSize, 'C-FG', 'Fine Grading Crew'),
         productionRate: fgRateVal ? new ProductionRate({ id: 'PR-FG', activityType: 'fine_grading', outputQty: fgRateVal, outputUOMId: 'SY' }) : new ProductionRate({ id: 'PR-FG', activityType: 'fine_grading', outputQty: 0, outputUOMId: 'SY' }),
         productivityFactor: productivity,
         mobilization: { included: isChecked('fgMob'), cost: rates.mobFG },
@@ -155,7 +197,7 @@ function buildEstimateFromUI() {
         activityType: 'dga_base',
         colorClass: 'yellow',
         quantity: new Quantity({ netQuantity: dgaQuantityData.netQuantity, uomId: 'CY', wasteFactor: 1.0, method: 'area×depth÷324', inputs: { area: dgaArea, depth: dgaDepth } }),
-        crew: Crew.fromComposite('C-DGA', 'DGA Crew', rates.rateCrewDGA, dgaCrewSize),
+        crew: selectCrew('dga_base', rates.rateCrewDGA, dgaCrewSize, 'C-DGA', 'DGA Crew'),
         productionRate: dgaRateVal ? new ProductionRate({ id: 'PR-DGA', activityType: 'dga_base', outputQty: dgaRateVal, outputUOMId: 'CY' }) : new ProductionRate({ id: 'PR-DGA', activityType: 'dga_base', outputQty: 0, outputUOMId: 'CY' }),
         productivityFactor: productivity,
         materialResources: [{ resource: matDGA, quantityPerOutputUnit: CONSTANTS.DGA_DENSITY * aggregateWaste }],
@@ -182,7 +224,7 @@ function buildEstimateFromUI() {
         activityType: 'milling',
         colorClass: 'pink',
         quantity: new Quantity({ netQuantity: millArea, uomId: 'SY', wasteFactor: 1.0, method: 'direct area', inputs: { area: millArea, depth: millDepth } }),
-        crew: Crew.fromComposite('C-MILL', 'Milling Crew', rates.rateCrewMill, millCrewSize),
+        crew: selectCrew('milling', rates.rateCrewMill, millCrewSize, 'C-MILL', 'Milling Crew'),
         productionRate: millRateVal ? new ProductionRate({ id: 'PR-MILL', activityType: 'milling', outputQty: millRateVal, outputUOMId: 'SY' }) : new ProductionRate({ id: 'PR-MILL', activityType: 'milling', outputQty: 0, outputUOMId: 'SY' }),
         productivityFactor: productivity,
         mobilization: { included: isChecked('millMob'), cost: rates.mobMill },
@@ -212,7 +254,7 @@ function buildEstimateFromUI() {
         activityType: 'paving_base',
         colorClass: 'blue',
         quantity: new Quantity({ netQuantity: baseArea, uomId: 'SY', wasteFactor: 1.0, method: 'direct area (rate in SY/day)', inputs: { area: baseArea, depth: baseDepth } }),
-        crew: Crew.fromComposite('C-PAVE-B', 'Paving Crew (Base)', rates.rateCrewBase, baseCrewSize),
+        crew: selectCrew('paving_base', rates.rateCrewBase, baseCrewSize, 'C-PAVE-B', 'Paving Crew (Base)'),
         productionRate: baseRateVal ? new ProductionRate({ id: 'PR-BASE', activityType: 'paving_base', outputQty: baseRateVal, outputUOMId: 'SY' }) : new ProductionRate({ id: 'PR-BASE', activityType: 'paving_base', outputQty: 0, outputUOMId: 'SY' }),
         productivityFactor: productivity,
         materialResources: [{ resource: mat19HMA, quantityPerOutputUnit: baseDepth * CONSTANTS.HMA_FACTOR * asphaltWaste }],
@@ -243,7 +285,7 @@ function buildEstimateFromUI() {
         activityType: 'paving_surface',
         colorClass: 'green',
         quantity: new Quantity({ netQuantity: surfArea, uomId: 'SY', wasteFactor: 1.0, method: 'direct area (rate in SY/day)', inputs: { area: surfArea, depth: surfDepth } }),
-        crew: Crew.fromComposite('C-PAVE-S', 'Paving Crew (Surface)', rates.rateCrewSurf, surfCrewSize),
+        crew: selectCrew('paving_surface', rates.rateCrewSurf, surfCrewSize, 'C-PAVE-S', 'Paving Crew (Surface)'),
         productionRate: surfRateVal ? new ProductionRate({ id: 'PR-SURF', activityType: 'paving_surface', outputQty: surfRateVal, outputUOMId: 'SY' }) : new ProductionRate({ id: 'PR-SURF', activityType: 'paving_surface', outputQty: 0, outputUOMId: 'SY' }),
         productivityFactor: productivity,
         materialResources: [{ resource: mat95HMA, quantityPerOutputUnit: surfDepth * CONSTANTS.HMA_FACTOR * asphaltWaste }],
@@ -272,7 +314,7 @@ function buildEstimateFromUI() {
         activityType: 'tack_coat',
         colorClass: 'teal',
         quantity: new Quantity({ netQuantity: tackArea, uomId: 'SY', wasteFactor: 1.0, inputs: { area: tackArea, tackAppRate } }),
-        crew: Crew.fromComposite('C-TACK', 'Tack Crew', 0, 0),
+        crew: selectCrew('tack_coat', 0, 0, 'C-TACK', 'Tack Crew'),
         productionRate: new ProductionRate({ id: 'PR-TACK', activityType: 'tack_coat', outputQty: 0, outputUOMId: 'SY' }),
         productivityFactor: new ProductivityFactor(),
         materialResources: [{ resource: matTack, quantityPerOutputUnit: tackAppRate }],
