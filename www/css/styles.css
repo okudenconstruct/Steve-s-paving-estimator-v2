@@ -517,6 +517,16 @@ body {
     box-shadow: 0 0 0 2px rgba(66, 165, 245, 0.15);
 }
 
+/* Auto-suggested rate indicator */
+.input-group select.suggested {
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 0 1px rgba(38, 198, 218, 0.2);
+}
+.input-group select.suggested + .suggested-label,
+.input-group .suggested-label {
+    display: none;
+}
+
 .input-group input::placeholder {
     color: var(--text-muted);
 }

@@ -20,7 +20,7 @@ import { Validator } from './validation/Validator.js';
 import { EstimateStore } from './storage/EstimateStore.js';
 import { Renderer } from './ui/Renderer.js';
 import { ExportService } from './ui/ExportService.js';
-import { ACTIVITY_CONFIG, DEFAULT_DEPENDENCIES, RATE_OPTIONS, DEFAULT_CREW_SIZES, SCOPE_ITEMS, CREW_DATA, CREW_THRESHOLDS, PRODUCTION_RATES, BENCHMARKS } from './data/paving-defaults.js';
+import { ACTIVITY_CONFIG, DEFAULT_DEPENDENCIES, RATE_OPTIONS, DEFAULT_CREW_SIZES, SCOPE_ITEMS, CREW_DATA, CREW_THRESHOLDS, PRODUCTION_RATES, BENCHMARKS, SUGGESTED_RATES } from './data/paving-defaults.js';
 import { MATERIAL_PRICES } from './data/constants.js';
 import { calculateConfidence, _getUnitCostStatus } from './engine/Confidence.js';
 import { generateAnalysis } from './engine/AnalysisEngine.js';
@@ -43,6 +43,149 @@ function getTextVal(id) {
 
 function isChecked(id) {
     return document.getElementById(id)?.checked || false;
+}
+
+// ---- Production Rate Suggestion Engine ----
+
+/**
+ * Suggest a production rate based on job mode, quantity, and depth.
+ * @param {string} activityType - e.g. 'excavation', 'milling'
+ * @param {string} jobMode - 'parking_lot' | 'roadway'
+ * @param {number} quantity - CY for excavation/DGA, SY for all others
+ * @param {number} [depth=0] - Depth in inches (for depth-sensitive activities)
+ * @returns {number|null} Suggested rate, or null if no suggestion
+ */
+function suggestProductionRate(activityType, jobMode, quantity, depth = 0) {
+    const modeRates = SUGGESTED_RATES[jobMode];
+    if (!modeRates) return null;
+
+    const config = modeRates[activityType];
+    if (!config || !config.tiers) return null;
+
+    if (!quantity || quantity <= 0) return null;
+
+    // Find the tier for this quantity
+    const tier = config.tiers.find(t => quantity <= t.maxQty);
+    if (!tier) return null;
+
+    let rate = tier.rate;
+
+    // Apply depth factor if applicable
+    if (config.depthBreaks && depth > 0) {
+        const depthBreak = config.depthBreaks.find(d => depth <= d.maxDepth);
+        if (depthBreak) {
+            rate = Math.round(rate * depthBreak.factor);
+        }
+    }
+
+    return rate;
+}
+
+/**
+ * Snap a suggested rate to the nearest available dropdown option.
+ * @param {number} suggestedRate - Raw suggested rate
+ * @param {string} selectId - The dropdown element ID
+ * @returns {number} The closest available option value
+ */
+function snapToDropdownOption(suggestedRate, selectId) {
+    const select = document.getElementById(selectId);
+    if (!select) return suggestedRate;
+
+    const options = Array.from(select.options)
+        .map(o => parseFloat(o.value))
+        .filter(v => v > 0);
+
+    if (options.length === 0) return suggestedRate;
+
+    // Find closest option
+    let closest = options[0];
+    let minDiff = Math.abs(suggestedRate - closest);
+    for (const opt of options) {
+        const diff = Math.abs(suggestedRate - opt);
+        if (diff < minDiff) {
+            minDiff = diff;
+            closest = opt;
+        }
+    }
+    return closest;
+}
+
+/**
+ * Activity type → select ID mapping for rate dropdowns
+ */
+const RATE_SELECT_MAP = {
+    excavation:     'excavationRate',
+    fine_grading:   'fineGradingRate',
+    dga_base:       'dgaRate',
+    milling:        'millingRate',
+    paving_base:    'baseRate',
+    paving_surface: 'surfaceRate',
+};
+
+/**
+ * Activity type → input IDs for area and depth
+ */
+const ACTIVITY_INPUTS = {
+    excavation:     { area: 'excavationArea', depth: 'excavationDepth' },
+    fine_grading:   { area: 'fineGradingArea', depth: null },
+    dga_base:       { area: 'dgaArea',        depth: 'dgaDepth' },
+    milling:        { area: 'millingArea',     depth: 'millingDepth' },
+    paving_base:    { area: 'baseArea',        depth: 'baseDepth' },
+    paving_surface: { area: 'surfaceArea',     depth: 'surfaceDepth' },
+};
+
+/**
+ * Check and apply suggested rate for a given activity.
+ * Only auto-suggests if the dropdown is still on "-- Select --" (value 0).
+ */
+function trySuggestRate(activityType) {
+    const selectId = RATE_SELECT_MAP[activityType];
+    const inputs = ACTIVITY_INPUTS[activityType];
+    if (!selectId || !inputs) return;
+
+    const select = document.getElementById(selectId);
+    if (!select) return;
+
+    // Only auto-suggest if user hasn't already chosen a rate
+    if (parseFloat(select.value) > 0) return;
+
+    const area = getVal(inputs.area);
+    const depth = inputs.depth ? getVal(inputs.depth) : 0;
+    if (area <= 0) return;
+
+    // For volume-driven activities (excavation, DGA), compute CY from area + depth
+    const actConfig = ACTIVITY_CONFIG[activityType];
+    let quantity = area; // default: area in SY
+    if (actConfig && actConfig.quantityUOM === 'CY') {
+        if (depth <= 0) return; // Need depth to compute CY — can't suggest yet
+        quantity = Math.ceil(area * depth / 324);
+    }
+
+    const rate = suggestProductionRate(activityType, currentJobMode, quantity, depth);
+    if (!rate) return;
+
+    const snapped = snapToDropdownOption(rate, selectId);
+    select.value = snapped;
+
+    // Add visual indicator that rate was auto-suggested
+    select.classList.add('suggested');
+}
+
+/**
+ * Run rate suggestion for all activities that haven't been manually set.
+ */
+function suggestAllRates() {
+    for (const activityType of Object.keys(RATE_SELECT_MAP)) {
+        trySuggestRate(activityType);
+    }
+}
+
+/**
+ * Clear the "suggested" indicator when user manually changes a rate dropdown.
+ */
+function onRateManualChange(selectId) {
+    const select = document.getElementById(selectId);
+    if (select) select.classList.remove('suggested');
 }
 
 // ---- Build Estimate from UI Inputs ----
@@ -512,6 +655,8 @@ function calculateWithTruckingOverrides(est, truckingRate) {
 // ---- Main Calculate Function ----
 
 function calculateAll() {
+    // Auto-suggest production rates before building estimate
+    suggestAllRates();
     const est = buildEstimateFromUI();
     const truckingRate = getVal('rateTrucking');
     const results = calculateWithTruckingOverrides(est, truckingRate);
@@ -605,6 +750,7 @@ function resetForm() {
             !select.id.includes('Swell') && !select.id.includes('Efficiency') &&
             !select.id.includes('CrewSize')) {
             select.selectedIndex = 0;
+            select.classList.remove('suggested');
         }
     });
 
@@ -662,6 +808,16 @@ function setJobMode(mode) {
     currentJobMode = mode;
     document.getElementById('pillParkingLot').classList.toggle('active', mode === 'parking_lot');
     document.getElementById('pillRoadway').classList.toggle('active', mode === 'roadway');
+
+    // Reset auto-suggested rates so they re-calculate for the new job mode
+    for (const selectId of Object.values(RATE_SELECT_MAP)) {
+        const select = document.getElementById(selectId);
+        if (select && select.classList.contains('suggested')) {
+            select.value = '0';
+            select.classList.remove('suggested');
+        }
+    }
+
     autoCalcCheck();
 }
 
@@ -756,4 +912,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Initialize scope grid
     initScopeGrid();
+
+    // Wire rate dropdown manual-change handlers to clear "suggested" indicator
+    for (const selectId of Object.values(RATE_SELECT_MAP)) {
+        const select = document.getElementById(selectId);
+        if (select) {
+            select.addEventListener('change', () => onRateManualChange(selectId));
+        }
+    }
 });

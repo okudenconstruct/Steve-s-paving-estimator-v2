@@ -232,17 +232,18 @@ export class Validator {
             const range = ranges[ar.activityType];
             if (!range) continue;
 
+            const qtyUnit = range.unit || 'SY';
             if (ar.grossQuantity < range.low) {
                 warnings.push({
                     level: 'info', check: 'qty_range',
-                    message: `${ar.description}: ${ar.grossQuantity.toLocaleString()} is below typical ${estimate.jobMode.replace('_', ' ')} range (${range.low.toLocaleString()}-${range.high.toLocaleString()}).`,
+                    message: `${ar.description}: ${ar.grossQuantity.toLocaleString()} ${qtyUnit} is below typical ${estimate.jobMode.replace('_', ' ')} range (${range.low.toLocaleString()}-${range.high.toLocaleString()} ${qtyUnit}).`,
                     axiom: null
                 });
             }
             if (ar.grossQuantity > range.high) {
                 warnings.push({
                     level: 'info', check: 'qty_range',
-                    message: `${ar.description}: ${ar.grossQuantity.toLocaleString()} exceeds typical ${estimate.jobMode.replace('_', ' ')} range (max ${range.high.toLocaleString()}).`,
+                    message: `${ar.description}: ${ar.grossQuantity.toLocaleString()} ${qtyUnit} exceeds typical ${estimate.jobMode.replace('_', ' ')} range (max ${range.high.toLocaleString()} ${qtyUnit}).`,
                     axiom: null
                 });
             }

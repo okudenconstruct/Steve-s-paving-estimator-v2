@@ -81,30 +81,185 @@ export const EFFICIENCY_OPTIONS = [
 ];
 
 // ============================================
-// DUAL-MODE PRODUCTION RATES (SY/day)
+// DUAL-MODE PRODUCTION RATES
 // Parking Lot: from historical production data medians
 // Roadway: from WisDOT Production Rate Table
+// Units: CY/day for excavation & DGA, SY/day for all others
 // ============================================
 
 export const PRODUCTION_RATES = {
     parking_lot: {
-        excavation:     150,
-        fine_grading:  3500,
-        dga_base:      2500,
-        milling:       3300,
-        paving_base:   1200,
-        paving_surface: 3500,
-        tack_coat:     5000,
+        excavation:     150,   // CY/day — backhoe in tight lot conditions
+        fine_grading:  3500,   // SY/day — motor grader/skid steer
+        dga_base:       200,   // CY/day — typical lot DGA placement
+        milling:       3300,   // SY/day — small-mid milling machine
+        paving_base:   1200,   // SY/day — 8-man crew, confined lot
+        paving_surface: 3500,  // SY/day — thinner lift, faster laydown
+        tack_coat:     5000,   // SY/day — distributor truck
     },
     roadway: {
-        excavation:     300,
-        fine_grading:  8000,
-        dga_base:      4000,
-        milling:      14000,
-        paving_base:   3500,
-        paving_surface: 6000,
-        tack_coat:    10000,
+        excavation:     300,   // CY/day — larger excavator, open ROW
+        fine_grading:  8000,   // SY/day — full-size motor grader
+        dga_base:       800,   // CY/day — large spread, open roadway
+        milling:      14000,   // SY/day — full-size Wirtgen, straight road
+        paving_base:   3500,   // SY/day — full-size paver
+        paving_surface: 6000,  // SY/day — thinner lift, open road
+        tack_coat:    10000,   // SY/day — distributor truck
     }
+};
+
+// ============================================
+// SUGGESTED PRODUCTION RATES — tiered by quantity and depth
+// Used to auto-suggest a rate when user enters area + depth
+// Rates are CY/day for excavation & DGA, SY/day for all others
+// depthFactor: multiplier for deep lifts (applies to depth-sensitive activities)
+// ============================================
+
+export const SUGGESTED_RATES = {
+    parking_lot: {
+        excavation: {
+            tiers: [
+                { maxQty:   50, rate: 100 },
+                { maxQty:  150, rate: 150 },
+                { maxQty:  400, rate: 200 },
+                { maxQty:  800, rate: 300 },
+                { maxQty: Infinity, rate: 400 },
+            ],
+            depthBreaks: null,  // excavation rate driven by volume, not depth
+        },
+        fine_grading: {
+            tiers: [
+                { maxQty:  1000, rate: 1500 },
+                { maxQty:  3000, rate: 2500 },
+                { maxQty:  6000, rate: 3500 },
+                { maxQty: 10000, rate: 4000 },
+                { maxQty: Infinity, rate: 5000 },
+            ],
+            depthBreaks: null,
+        },
+        dga_base: {
+            tiers: [
+                { maxQty:   50, rate:  100 },
+                { maxQty:  150, rate:  150 },
+                { maxQty:  300, rate:  200 },
+                { maxQty:  600, rate:  300 },
+                { maxQty: Infinity, rate: 400 },
+            ],
+            depthBreaks: null,  // DGA rate driven by volume, not depth
+        },
+        milling: {
+            tiers: [
+                { maxQty:  1000, rate: 2000 },
+                { maxQty:  3000, rate: 3000 },
+                { maxQty:  6000, rate: 4000 },
+                { maxQty: 12000, rate: 5000 },
+                { maxQty: Infinity, rate: 6000 },
+            ],
+            depthBreaks: [
+                { maxDepth: 2.0, factor: 1.00 },  // standard thin mill
+                { maxDepth: 3.0, factor: 0.80 },   // moderate depth
+                { maxDepth: Infinity, factor: 0.65 }, // deep mill 4"+
+            ],
+        },
+        paving_base: {
+            tiers: [
+                { maxQty:   500, rate:  750 },
+                { maxQty:  1500, rate: 1000 },
+                { maxQty:  3000, rate: 1500 },
+                { maxQty:  6000, rate: 2000 },
+                { maxQty: Infinity, rate: 2500 },
+            ],
+            depthBreaks: [
+                { maxDepth: 2.5, factor: 1.00 },  // standard 2" base
+                { maxDepth: 3.5, factor: 0.85 },   // thick base 3"
+                { maxDepth: Infinity, factor: 0.70 }, // very thick 4"+
+            ],
+        },
+        paving_surface: {
+            tiers: [
+                { maxQty:  1000, rate: 2000 },
+                { maxQty:  3000, rate: 3000 },
+                { maxQty:  6000, rate: 3500 },
+                { maxQty: 12000, rate: 4000 },
+                { maxQty: Infinity, rate: 5000 },
+            ],
+            depthBreaks: [
+                { maxDepth: 1.5, factor: 1.00 },  // standard surface
+                { maxDepth: 2.5, factor: 0.85 },   // thick surface
+                { maxDepth: Infinity, factor: 0.70 },
+            ],
+        },
+    },
+    roadway: {
+        excavation: {
+            tiers: [
+                { maxQty:  100, rate:  200 },
+                { maxQty:  400, rate:  300 },
+                { maxQty: 1000, rate:  500 },
+                { maxQty: 3000, rate:  800 },
+                { maxQty: Infinity, rate: 1000 },
+            ],
+            depthBreaks: null,
+        },
+        fine_grading: {
+            tiers: [
+                { maxQty:  3000, rate: 4000 },
+                { maxQty:  8000, rate: 6000 },
+                { maxQty: 15000, rate: 8000 },
+                { maxQty: Infinity, rate: 8000 },
+            ],
+            depthBreaks: null,
+        },
+        dga_base: {
+            tiers: [
+                { maxQty:  150, rate:  300 },
+                { maxQty:  500, rate:  500 },
+                { maxQty: 1500, rate:  800 },
+                { maxQty: Infinity, rate: 1000 },
+            ],
+            depthBreaks: null,
+        },
+        milling: {
+            tiers: [
+                { maxQty:  3000, rate:  6000 },
+                { maxQty:  8000, rate: 10000 },
+                { maxQty: 20000, rate: 14000 },
+                { maxQty: 50000, rate: 18000 },
+                { maxQty: Infinity, rate: 25000 },
+            ],
+            depthBreaks: [
+                { maxDepth: 2.0, factor: 1.00 },
+                { maxDepth: 3.0, factor: 0.80 },
+                { maxDepth: Infinity, factor: 0.65 },
+            ],
+        },
+        paving_base: {
+            tiers: [
+                { maxQty:  2000, rate: 2000 },
+                { maxQty:  5000, rate: 3000 },
+                { maxQty: 10000, rate: 3500 },
+                { maxQty: Infinity, rate: 4000 },
+            ],
+            depthBreaks: [
+                { maxDepth: 2.5, factor: 1.00 },
+                { maxDepth: 3.5, factor: 0.85 },
+                { maxDepth: Infinity, factor: 0.70 },
+            ],
+        },
+        paving_surface: {
+            tiers: [
+                { maxQty:  3000, rate: 3500 },
+                { maxQty:  8000, rate: 5000 },
+                { maxQty: 20000, rate: 6000 },
+                { maxQty: Infinity, rate: 8000 },
+            ],
+            depthBreaks: [
+                { maxDepth: 1.5, factor: 1.00 },
+                { maxDepth: 2.5, factor: 0.85 },
+                { maxDepth: Infinity, factor: 0.70 },
+            ],
+        },
+    },
 };
 
 // ============================================
@@ -137,27 +292,29 @@ export const BENCHMARKS = {
 };
 
 // ============================================
-// QUANTITY RANGES (SY) — typical job sizes
+// QUANTITY RANGES — typical job sizes
+// Excavation & DGA: CY (volume-driven)
+// All others: SY (area-driven)
 // ============================================
 
 export const QTY_RANGES = {
     parking_lot: {
-        excavation:     { low:   50, high:  2000 },
-        fine_grading:   { low:  500, high: 15000 },
-        dga_base:       { low:  200, high: 12000 },
-        milling:        { low:  500, high: 20000 },
-        paving_base:    { low:  200, high: 12000 },
-        paving_surface: { low:  500, high: 25000 },
-        tack_coat:      { low:  500, high: 25000 },
+        excavation:     { low:   10, high:   800, unit: 'CY' },
+        fine_grading:   { low:  500, high: 15000, unit: 'SY' },
+        dga_base:       { low:   10, high:   600, unit: 'CY' },
+        milling:        { low:  500, high: 20000, unit: 'SY' },
+        paving_base:    { low:  200, high: 12000, unit: 'SY' },
+        paving_surface: { low:  500, high: 25000, unit: 'SY' },
+        tack_coat:      { low:  500, high: 25000, unit: 'SY' },
     },
     roadway: {
-        excavation:     { low:  200, high: 10000 },
-        fine_grading:   { low: 2000, high: 50000 },
-        dga_base:       { low: 1000, high: 30000 },
-        milling:        { low: 2000, high: 80000 },
-        paving_base:    { low: 1000, high: 30000 },
-        paving_surface: { low: 2000, high: 80000 },
-        tack_coat:      { low: 2000, high: 80000 },
+        excavation:     { low:   50, high:  5000, unit: 'CY' },
+        fine_grading:   { low: 2000, high: 50000, unit: 'SY' },
+        dga_base:       { low:   50, high:  3000, unit: 'CY' },
+        milling:        { low: 2000, high: 80000, unit: 'SY' },
+        paving_base:    { low: 1000, high: 30000, unit: 'SY' },
+        paving_surface: { low: 2000, high: 80000, unit: 'SY' },
+        tack_coat:      { low: 2000, high: 80000, unit: 'SY' },
     }
 };
 

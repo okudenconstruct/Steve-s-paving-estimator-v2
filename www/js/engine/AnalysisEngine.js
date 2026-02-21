@@ -36,14 +36,15 @@ export function generateAnalysis(snapshot) {
 
         // Rule 1: Quantity vs typical range
         if (range && a.grossQuantity) {
+            const qtyUnit = range.unit || 'SY';
             if (a.grossQuantity < range.low) {
                 add(a.activityType, 'SMALL_QTY', 'INFO',
-                    `${a.description}: Quantity ${a.grossQuantity.toLocaleString()} SY is below typical range (${range.low.toLocaleString()}-${range.high.toLocaleString()}).`,
+                    `${a.description}: Quantity ${a.grossQuantity.toLocaleString()} ${qtyUnit} is below typical range (${range.low.toLocaleString()}-${range.high.toLocaleString()} ${qtyUnit}).`,
                     ['Crew may be oversized for scope', 'Consider minimum shift billing impact']);
             }
             if (a.grossQuantity > range.high) {
                 add(a.activityType, 'LARGE_QTY', 'INFO',
-                    `${a.description}: Quantity ${a.grossQuantity.toLocaleString()} SY exceeds typical range (max ${range.high.toLocaleString()}).`,
+                    `${a.description}: Quantity ${a.grossQuantity.toLocaleString()} ${qtyUnit} exceeds typical range (max ${range.high.toLocaleString()} ${qtyUnit}).`,
                     ['May require phasing or multiple mobilizations', 'Verify production rate achievable at this scale']);
             }
         }

@@ -31,7 +31,8 @@ nul
 # Raw data files (not part of the app)
 *.xlsx
 *.zip
-*Data/
+# Raw data folders at project root (e.g., HeavyBidData/, ExportData/)
+/[A-Z]*Data/
 all paving crew compositions.txt
 PLAN.md
 maintenanceSPECIFICATIONreference.md
