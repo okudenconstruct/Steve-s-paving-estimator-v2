@@ -70,10 +70,14 @@ export class Calculator {
         for (const activity of activities) {
             const trk = truckingResults.get(activity.id);
 
-            // Compute unit cost for benchmarking
+            // Compute unit cost for benchmarking (always $/SY)
+            // Use area (SY) as denominator — benchmarks are all $/SY regardless of activity UOM
+            // Exclude mobilization (lump sum, not per-unit production cost)
             const grossQty = activity.quantity?.grossQuantity || 0;
+            const areaSY = activity.quantity?.inputs?.area || grossQty;
+            const productionCost = activity.laborCost + activity.equipmentCost + activity.materialCost + trk.truckCost;
             const actDirectCost = activity.directCost + trk.truckCost;
-            const unitCost = grossQty > 0 ? actDirectCost / grossQty : 0;
+            const unitCost = areaSY > 0 ? productionCost / areaSY : 0;
 
             const result = {
                 id: activity.id,

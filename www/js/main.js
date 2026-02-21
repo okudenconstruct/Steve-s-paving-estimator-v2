@@ -20,8 +20,10 @@ import { Validator } from './validation/Validator.js';
 import { EstimateStore } from './storage/EstimateStore.js';
 import { Renderer } from './ui/Renderer.js';
 import { ExportService } from './ui/ExportService.js';
-import { ACTIVITY_CONFIG, DEFAULT_DEPENDENCIES, RATE_OPTIONS, DEFAULT_CREW_SIZES, SCOPE_ITEMS, CREW_DATA, CREW_THRESHOLDS, PRODUCTION_RATES } from './data/paving-defaults.js';
+import { ACTIVITY_CONFIG, DEFAULT_DEPENDENCIES, RATE_OPTIONS, DEFAULT_CREW_SIZES, SCOPE_ITEMS, CREW_DATA, CREW_THRESHOLDS, PRODUCTION_RATES, BENCHMARKS } from './data/paving-defaults.js';
 import { MATERIAL_PRICES } from './data/constants.js';
+import { calculateConfidence, _getUnitCostStatus } from './engine/Confidence.js';
+import { generateAnalysis } from './engine/AnalysisEngine.js';
 
 // ---- Global state ----
 let estimate = null;
@@ -433,6 +435,11 @@ function calculateWithTruckingOverrides(est, truckingRate) {
                 ar.truckHours = truckHours;
                 ar.truckingCost = truckCost;
                 ar.directCost = ar.laborCost + ar.equipmentCost + ar.materialCost + ar.mobilizationCost + ar.truckingCost;
+
+                // Recalculate unit cost ($/SY) with corrected trucking
+                const areaSY = activity.quantity?.inputs?.area || ar.grossQuantity;
+                const prodCost = ar.laborCost + ar.equipmentCost + ar.materialCost + ar.truckingCost;
+                ar.unitCost = areaSY > 0 ? prodCost / areaSY : 0;
             }
         }
 
@@ -450,6 +457,45 @@ function calculateWithTruckingOverrides(est, truckingRate) {
         results.directCostTotal, laborCostForIndirect, results.projectDuration
     );
     Object.assign(results, indirectResults);
+
+    // Recalculate unit checks with corrected unit costs
+    const benchmarks = BENCHMARKS[est.jobMode] || BENCHMARKS.parking_lot;
+    results.unitChecks = results.activities
+        .filter(a => a.duration > 0 && a.unitCost > 0)
+        .map(a => {
+            const bm = benchmarks[a.activityType];
+            if (!bm) return null;
+            const status = _getUnitCostStatus(a.unitCost, bm);
+            return {
+                activityType: a.activityType,
+                description: a.description,
+                unitCost: a.unitCost,
+                p25: bm.p25,
+                median: bm.median,
+                p75: bm.p75,
+                n: bm.n,
+                basis: bm.basis,
+                status,
+            };
+        })
+        .filter(Boolean);
+
+    // Recalculate confidence with corrected unit costs
+    results.confidenceScore = calculateConfidence({
+        activities: results.activities,
+        jobMode: est.jobMode,
+    });
+    est.confidenceScore = results.confidenceScore;
+
+    // Recalculate analysis with corrected data
+    results.analysisResults = generateAnalysis({
+        activities: results.activities,
+        jobMode: est.jobMode,
+        clusterResults: results.clusterResults,
+        scopeAssumptions: est.scopeAssumptions,
+        totalHMATons: results.totalHMATons,
+    });
+    est.analysisResults = results.analysisResults;
 
     // Validation
     results.validationWarnings = validator.validate(results, est);
