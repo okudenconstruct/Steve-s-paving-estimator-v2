@@ -372,9 +372,10 @@ export class Renderer {
         for (const c of checks) {
             const tr = document.createElement('tr');
             tr.className = 'uc-' + c.status.toLowerCase().replace('_', '-');
+            const uom = c.unit || 'SY';
             tr.innerHTML = `
                 <td>${c.description}</td>
-                <td>${c.unitCost.toFixed(2)}</td>
+                <td>$${c.unitCost.toFixed(2)}/${uom}</td>
                 <td>${c.p25.toFixed(2)}</td>
                 <td>${c.median.toFixed(2)}</td>
                 <td>${c.p75.toFixed(2)}</td>

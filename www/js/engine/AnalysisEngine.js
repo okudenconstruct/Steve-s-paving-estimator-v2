@@ -50,23 +50,24 @@ export function generateAnalysis(snapshot) {
 
         // Rule 2: Unit cost vs benchmark
         if (bm && a.unitCost && a.unitCost > 0) {
+            const uom = bm.unit || 'SY';
             const status = _getUnitCostStatus(a.unitCost, bm);
             if (status === 'VERY_HIGH') {
                 add(a.activityType, 'UNIT_COST', 'WARNING',
-                    `${a.description}: Unit cost $${a.unitCost.toFixed(2)}/SY is significantly above P75 ($${bm.p75.toFixed(2)}).`,
-                    [`Benchmark median: $${bm.median.toFixed(2)}/SY (n=${bm.n})`, 'Review crew rate, production rate, or material cost']);
+                    `${a.description}: Unit cost $${a.unitCost.toFixed(2)}/${uom} is significantly above P75 ($${bm.p75.toFixed(2)}).`,
+                    [`Benchmark median: $${bm.median.toFixed(2)}/${uom} (n=${bm.n})`, 'Review crew rate, production rate, or material cost']);
             } else if (status === 'HIGH') {
                 add(a.activityType, 'UNIT_COST', 'INFO',
-                    `${a.description}: Unit cost $${a.unitCost.toFixed(2)}/SY is above P75 ($${bm.p75.toFixed(2)}).`,
-                    [`Benchmark range: $${bm.p25.toFixed(2)}-$${bm.p75.toFixed(2)}/SY`]);
+                    `${a.description}: Unit cost $${a.unitCost.toFixed(2)}/${uom} is above P75 ($${bm.p75.toFixed(2)}).`,
+                    [`Benchmark range: $${bm.p25.toFixed(2)}-$${bm.p75.toFixed(2)}/${uom}`]);
             } else if (status === 'VERY_LOW') {
                 add(a.activityType, 'UNIT_COST', 'WARNING',
-                    `${a.description}: Unit cost $${a.unitCost.toFixed(2)}/SY is significantly below P25 ($${bm.p25.toFixed(2)}).`,
-                    [`Benchmark median: $${bm.median.toFixed(2)}/SY (n=${bm.n})`, 'May indicate missing cost components']);
+                    `${a.description}: Unit cost $${a.unitCost.toFixed(2)}/${uom} is significantly below P25 ($${bm.p25.toFixed(2)}).`,
+                    [`Benchmark median: $${bm.median.toFixed(2)}/${uom} (n=${bm.n})`, 'May indicate missing cost components']);
             } else if (status === 'LOW') {
                 add(a.activityType, 'UNIT_COST', 'INFO',
-                    `${a.description}: Unit cost $${a.unitCost.toFixed(2)}/SY is below P25 ($${bm.p25.toFixed(2)}).`,
-                    [`Benchmark range: $${bm.p25.toFixed(2)}-$${bm.p75.toFixed(2)}/SY`]);
+                    `${a.description}: Unit cost $${a.unitCost.toFixed(2)}/${uom} is below P25 ($${bm.p25.toFixed(2)}).`,
+                    [`Benchmark range: $${bm.p25.toFixed(2)}-$${bm.p75.toFixed(2)}/${uom}`]);
             }
         }
 

@@ -70,14 +70,19 @@ export class Calculator {
         for (const activity of activities) {
             const trk = truckingResults.get(activity.id);
 
-            // Compute unit cost for benchmarking (always $/SY)
-            // Use area (SY) as denominator — benchmarks are all $/SY regardless of activity UOM
+            // Compute unit cost for benchmarking
+            // Excavation & DGA: $/CY (volume-driven, depth-independent)
+            // All others: $/SY (area-driven)
             // Exclude mobilization (lump sum, not per-unit production cost)
             const grossQty = activity.quantity?.grossQuantity || 0;
-            const areaSY = activity.quantity?.inputs?.area || grossQty;
+            const benchmarks = BENCHMARKS[estimate.jobMode] || BENCHMARKS.parking_lot;
+            const bm = benchmarks[activity.activityType];
+            const useCY = bm && bm.unit === 'CY';
+            const unitDenominator = useCY ? grossQty : (activity.quantity?.inputs?.area || grossQty);
             const productionCost = activity.laborCost + activity.equipmentCost + activity.materialCost + trk.truckCost;
             const actDirectCost = activity.directCost + trk.truckCost;
-            const unitCost = areaSY > 0 ? productionCost / areaSY : 0;
+            const unitCost = unitDenominator > 0 ? productionCost / unitDenominator : 0;
+            const unitCostUOM = useCY ? 'CY' : 'SY';
 
             const result = {
                 id: activity.id,
@@ -111,6 +116,7 @@ export class Calculator {
                 truckingCost: trk.truckCost,
                 directCost: actDirectCost,
                 unitCost,
+                unitCostUOM,
 
                 // Trucking detail
                 trucks: trk.trucks,
@@ -201,11 +207,13 @@ export class Calculator {
                     activityType: a.activityType,
                     description: a.description,
                     unitCost: a.unitCost,
+                    unitCostUOM: a.unitCostUOM || 'SY',
                     p25: bm.p25,
                     median: bm.median,
                     p75: bm.p75,
                     n: bm.n,
                     basis: bm.basis,
+                    unit: bm.unit || 'SY',
                     status,
                 };
             })

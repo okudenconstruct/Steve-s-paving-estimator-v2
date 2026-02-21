@@ -207,16 +207,17 @@ export class Validator {
             const bm = benchmarks[ar.activityType];
             if (!bm) continue;
 
+            const uom = bm.unit || 'SY';
             if (ar.unitCost > bm.p75 * 1.5) {
                 warnings.push({
                     level: 'warning', check: 'benchmark',
-                    message: `${ar.description}: $${ar.unitCost.toFixed(2)}/SY is significantly above P75 ($${bm.p75.toFixed(2)}).`,
+                    message: `${ar.description}: $${ar.unitCost.toFixed(2)}/${uom} is significantly above P75 ($${bm.p75.toFixed(2)}).`,
                     axiom: null
                 });
             } else if (ar.unitCost < bm.p25 * 0.5) {
                 warnings.push({
                     level: 'warning', check: 'benchmark',
-                    message: `${ar.description}: $${ar.unitCost.toFixed(2)}/SY is significantly below P25 ($${bm.p25.toFixed(2)}).`,
+                    message: `${ar.description}: $${ar.unitCost.toFixed(2)}/${uom} is significantly below P25 ($${bm.p25.toFixed(2)}).`,
                     axiom: null
                 });
             }

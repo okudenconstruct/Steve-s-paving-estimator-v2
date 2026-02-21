@@ -67,7 +67,7 @@ export class ExportService {
             if (ar.materialCost > 0) activityLines += `\n  Material: ${fc(ar.materialCost)}`;
             if (ar.truckingCost > 0) activityLines += `\n  Trucking: ${fc(ar.truckingCost)}`;
             if (ar.mobilizationCost > 0) activityLines += `\n  Mobilization: ${fc(ar.mobilizationCost)}`;
-            if (ar.unitCost > 0) activityLines += `\n  Unit Cost: $${ar.unitCost.toFixed(2)}/SY`;
+            if (ar.unitCost > 0) activityLines += `\n  Unit Cost: $${ar.unitCost.toFixed(2)}/${ar.unitCostUOM || 'SY'}`;
             activityLines += '\n';
         }
 
@@ -76,7 +76,8 @@ export class ExportService {
         if (results.unitChecks && results.unitChecks.length > 0) {
             unitCheckLines = '\nUNIT COST REASONABLENESS CHECK\n------------------------------';
             for (const c of results.unitChecks) {
-                unitCheckLines += `\n  ${c.description}: $${c.unitCost.toFixed(2)}/SY [${c.status.replace('_', ' ')}] (P25: $${c.p25.toFixed(2)}, Med: $${c.median.toFixed(2)}, P75: $${c.p75.toFixed(2)})`;
+                const uom = c.unit || 'SY';
+                unitCheckLines += `\n  ${c.description}: $${c.unitCost.toFixed(2)}/${uom} [${c.status.replace('_', ' ')}] (P25: $${c.p25.toFixed(2)}, Med: $${c.median.toFixed(2)}, P75: $${c.p75.toFixed(2)})`;
             }
             unitCheckLines += '\n';
         }

@@ -409,6 +409,7 @@ function calculateWithTruckingOverrides(est, truckingRate) {
     // We handle this by patching the trucking results after calculation.
 
     const results = calculator.calculate(est, truckingRate);
+    const benchmarks = BENCHMARKS[est.jobMode] || BENCHMARKS.parking_lot;
 
     // Patch trucking for activities with overrides
     for (const ar of results.activities) {
@@ -436,10 +437,14 @@ function calculateWithTruckingOverrides(est, truckingRate) {
                 ar.truckingCost = truckCost;
                 ar.directCost = ar.laborCost + ar.equipmentCost + ar.materialCost + ar.mobilizationCost + ar.truckingCost;
 
-                // Recalculate unit cost ($/SY) with corrected trucking
-                const areaSY = activity.quantity?.inputs?.area || ar.grossQuantity;
+                // Recalculate unit cost with corrected trucking
+                // Use CY denominator for excavation/DGA, SY for all others
+                const bm = benchmarks[activity.activityType];
+                const useCY = bm && bm.unit === 'CY';
+                const denom = useCY ? ar.grossQuantity : (activity.quantity?.inputs?.area || ar.grossQuantity);
                 const prodCost = ar.laborCost + ar.equipmentCost + ar.materialCost + ar.truckingCost;
-                ar.unitCost = areaSY > 0 ? prodCost / areaSY : 0;
+                ar.unitCost = denom > 0 ? prodCost / denom : 0;
+                ar.unitCostUOM = useCY ? 'CY' : 'SY';
             }
         }
 
@@ -459,7 +464,6 @@ function calculateWithTruckingOverrides(est, truckingRate) {
     Object.assign(results, indirectResults);
 
     // Recalculate unit checks with corrected unit costs
-    const benchmarks = BENCHMARKS[est.jobMode] || BENCHMARKS.parking_lot;
     results.unitChecks = results.activities
         .filter(a => a.duration > 0 && a.unitCost > 0)
         .map(a => {
@@ -470,11 +474,13 @@ function calculateWithTruckingOverrides(est, truckingRate) {
                 activityType: a.activityType,
                 description: a.description,
                 unitCost: a.unitCost,
+                unitCostUOM: a.unitCostUOM || 'SY',
                 p25: bm.p25,
                 median: bm.median,
                 p75: bm.p75,
                 n: bm.n,
                 basis: bm.basis,
+                unit: bm.unit || 'SY',
                 status,
             };
         })

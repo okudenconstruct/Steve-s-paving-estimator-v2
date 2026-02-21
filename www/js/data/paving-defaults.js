@@ -108,29 +108,31 @@ export const PRODUCTION_RATES = {
 };
 
 // ============================================
-// HISTORICAL BENCHMARKS ($/SY)
+// HISTORICAL BENCHMARKS
+// Excavation & DGA: $/CY (volume-driven, depth-independent)
+// All others: $/SY (area-driven)
 // Historical bid data for parking lot
 // WisDOT FY2024 Average Unit Price List for roadway
 // ============================================
 
 export const BENCHMARKS = {
     parking_lot: {
-        excavation:     { p25: 22.99, median: 29.34, p75: 36.25, n: 19,  basis: 'empirical' },
-        fine_grading:   { p25:  0.77, median:  0.92, p75:  1.12, n: 507, basis: 'empirical' },
-        dga_base:       { p25:  6.56, median:  7.38, p75:  8.29, n: 103, basis: 'empirical' },
-        milling:        { p25:  2.95, median:  3.64, p75:  4.58, n: 516, basis: 'empirical' },
-        paving_base:    { p25: 22.31, median: 28.10, p75: 35.26, n: 162, basis: 'empirical' },
-        paving_surface: { p25: 10.30, median: 11.09, p75: 12.25, n: 163, basis: 'empirical' },
-        tack_coat:      { p25:  0.15, median:  0.22, p75:  0.35, n: 0,   basis: 'derived' },
+        excavation:     { p25: 12.00, median: 18.00, p75: 28.00, n: 19,  basis: 'empirical', unit: 'CY' },
+        fine_grading:   { p25:  0.77, median:  0.92, p75:  1.12, n: 507, basis: 'empirical', unit: 'SY' },
+        dga_base:       { p25: 35.00, median: 50.00, p75: 70.00, n: 103, basis: 'empirical', unit: 'CY' },
+        milling:        { p25:  2.95, median:  3.64, p75:  4.58, n: 516, basis: 'empirical', unit: 'SY' },
+        paving_base:    { p25: 22.31, median: 28.10, p75: 35.26, n: 162, basis: 'empirical', unit: 'SY' },
+        paving_surface: { p25: 10.30, median: 11.09, p75: 12.25, n: 163, basis: 'empirical', unit: 'SY' },
+        tack_coat:      { p25:  0.15, median:  0.22, p75:  0.35, n: 0,   basis: 'derived',   unit: 'SY' },
     },
     roadway: {
-        excavation:     { p25:  9.00, median: 12.00, p75: 18.00, n: 0, basis: 'derived' },
-        fine_grading:   { p25:  0.60, median:  0.85, p75:  1.20, n: 0, basis: 'derived' },
-        dga_base:       { p25:  4.50, median:  6.00, p75:  8.50, n: 0, basis: 'derived' },
-        milling:        { p25:  1.50, median:  1.82, p75:  2.50, n: 0, basis: 'derived' },
-        paving_base:    { p25:  8.00, median: 11.50, p75: 16.00, n: 0, basis: 'derived' },
-        paving_surface: { p25:  6.00, median:  8.50, p75: 12.00, n: 0, basis: 'derived' },
-        tack_coat:      { p25:  0.10, median:  0.18, p75:  0.30, n: 0, basis: 'derived' },
+        excavation:     { p25:  8.00, median: 12.00, p75: 20.00, n: 0, basis: 'derived', unit: 'CY' },
+        fine_grading:   { p25:  0.60, median:  0.85, p75:  1.20, n: 0, basis: 'derived', unit: 'SY' },
+        dga_base:       { p25: 30.00, median: 42.00, p75: 60.00, n: 0, basis: 'derived', unit: 'CY' },
+        milling:        { p25:  1.50, median:  1.82, p75:  2.50, n: 0, basis: 'derived', unit: 'SY' },
+        paving_base:    { p25:  8.00, median: 11.50, p75: 16.00, n: 0, basis: 'derived', unit: 'SY' },
+        paving_surface: { p25:  6.00, median:  8.50, p75: 12.00, n: 0, basis: 'derived', unit: 'SY' },
+        tack_coat:      { p25:  0.10, median:  0.18, p75:  0.30, n: 0, basis: 'derived', unit: 'SY' },
     }
 };
 
