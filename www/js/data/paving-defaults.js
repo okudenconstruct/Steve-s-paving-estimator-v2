@@ -81,30 +81,37 @@ export const EFFICIENCY_OPTIONS = [
 ];
 
 // ============================================
-// DUAL-MODE PRODUCTION RATES
-// Parking Lot: from historical production data medians
-// Roadway: from WisDOT Production Rate Table
+// DUAL-MODE PRODUCTION RATES — flat defaults
+// Used as general reference; SUGGESTED_RATES tiers override these
 // Units: CY/day for excavation & DGA, SY/day for all others
+//
+// Sources:
+//   parking_lot: conservative end of industry ranges for confined conditions
+//   roadway excavation: WisDOT truck-based typical = 600 (default 300 is conservative)
+//   roadway fine_grading: AZDOT Grade Roadway = 3,000-4,000 SY/day
+//   roadway dga_base: AZDOT Urban = 750-1,200 CY/day
+//   roadway milling: WisDOT thick typical = 14,000 SY/day (exact match)
+//   roadway paving: WisDOT 1,300 tons/day typical, converted via 110 lbs/SY/inch
 // ============================================
 
 export const PRODUCTION_RATES = {
     parking_lot: {
-        excavation:     150,   // CY/day — backhoe in tight lot conditions
-        fine_grading:  3500,   // SY/day — motor grader/skid steer
-        dga_base:       200,   // CY/day — typical lot DGA placement
-        milling:       3300,   // SY/day — small-mid milling machine
-        paving_base:   1200,   // SY/day — 8-man crew, confined lot
-        paving_surface: 3500,  // SY/day — thinner lift, faster laydown
-        tack_coat:     5000,   // SY/day — distributor truck
+        excavation:     150,   // CY/day — below WisDOT low (250), reflects small backhoe in tight lot
+        fine_grading:  3500,   // SY/day — matches AZDOT 3,000-4,000 range
+        dga_base:       200,   // CY/day — below AZDOT Independent low (250), conservative
+        milling:       3300,   // SY/day — within MS DOT urban range (2,000-3,000), small-mid machine
+        paving_base:   1200,   // SY/day — industry small crew range (1,000-2,000)
+        paving_surface: 3500,  // SY/day — industry small crew thin lift (2,000-4,000)
+        tack_coat:     5000,   // SY/day — distributor truck, estimated
     },
     roadway: {
-        excavation:     300,   // CY/day — larger excavator, open ROW
-        fine_grading:  8000,   // SY/day — full-size motor grader
-        dga_base:       800,   // CY/day — large spread, open roadway
-        milling:      14000,   // SY/day — full-size Wirtgen, straight road
-        paving_base:   3500,   // SY/day — full-size paver
-        paving_surface: 6000,  // SY/day — thinner lift, open road
-        tack_coat:    10000,   // SY/day — distributor truck
+        excavation:     300,   // CY/day — WisDOT truck-based low 250, typical 600
+        fine_grading:  5000,   // SY/day — above AZDOT 3,000-4,000 for large motor grader on open ROW
+        dga_base:       800,   // CY/day — AZDOT Urban low 750
+        milling:      14000,   // SY/day — WisDOT thick milling typical (exact)
+        paving_base:   3500,   // SY/day — WisDOT 1,300 T/day at 2.5" ≈ 3,800 SY/day
+        paving_surface: 6000,  // SY/day — WisDOT 1,300 T/day at 1.5" ≈ 15,700; conservative for real conditions
+        tack_coat:    10000,   // SY/day — distributor truck on open road, estimated
     }
 };
 
@@ -112,12 +119,41 @@ export const PRODUCTION_RATES = {
 // SUGGESTED PRODUCTION RATES — tiered by quantity and depth
 // Used to auto-suggest a rate when user enters area + depth
 // Rates are CY/day for excavation & DGA, SY/day for all others
-// depthFactor: multiplier for deep lifts (applies to depth-sensitive activities)
+//
+// Sources & derivation notes:
+//   excavation:
+//     WisDOT Production Rate Table — truck-based: 250/600/1,300 CY/day
+//     CAT 320 class: ~360-720 CY/day (Eagle Power benchmarks)
+//     Parking lot tiers scaled down for tight access / small backhoe
+//     Quantity tier breakpoints: estimated, no published source
+//   fine_grading:
+//     AZDOT: "Grade Roadway for Pavement" 3,000-4,000 SY/day
+//     Quantity tier breakpoints: estimated
+//   dga_base:
+//     AZDOT: Independent 250-750 CY/day, Urban 750-1,200, Rural 1,500-2,000
+//     Parking lot tiers scaled from AZDOT Independent range
+//     Quantity tier breakpoints: estimated
+//   milling:
+//     WisDOT: thin (0-2") 8,500/17,000/25,000; thick (2"+) 8,000/14,000/20,000
+//     MS DOT: urban removal 2,000-3,000, rural 3,000-5,000
+//     Parking lot tiers use MS DOT urban range as baseline
+//   paving (base & surface):
+//     WisDOT: 700/1,300/1,800 tons/day
+//     At 110 lbs/SY/inch: 1.5" = 15,700 SY/day; 2" = 11,800; 3" = 7,900
+//     Small crew / parking lot: industry 1,000-2,000 SY/day
+//     Quantity tier breakpoints: estimated
+//   depth factors (milling):
+//     WisDOT thin vs thick: 17,000/14,000 = 0.82 ratio (app uses 0.80)
+//     4"+ extrapolated from MnDOT NRRA milling research (cutting force vs depth)
+//   depth factors (paving):
+//     Derived from tonnage math at 110 lbs/SY/inch spread rate
+//     2" to 3" = 7,900/11,800 = 0.67; 1.5" to 2.5" = 9,500/15,700 = 0.60
 // ============================================
 
 export const SUGGESTED_RATES = {
     parking_lot: {
         excavation: {
+            // WisDOT truck-based low: 250 CY/day; parking lot scaled down for tight access
             tiers: [
                 { maxQty:   50, rate: 100 },
                 { maxQty:  150, rate: 150 },
@@ -125,9 +161,10 @@ export const SUGGESTED_RATES = {
                 { maxQty:  800, rate: 300 },
                 { maxQty: Infinity, rate: 400 },
             ],
-            depthBreaks: null,  // excavation rate driven by volume, not depth
+            depthBreaks: null,
         },
         fine_grading: {
+            // AZDOT: 3,000-4,000 SY/day for "Grade Roadway for Pavement"
             tiers: [
                 { maxQty:  1000, rate: 1500 },
                 { maxQty:  3000, rate: 2500 },
@@ -138,6 +175,7 @@ export const SUGGESTED_RATES = {
             depthBreaks: null,
         },
         dga_base: {
+            // AZDOT Independent: 250-750 CY/day
             tiers: [
                 { maxQty:   50, rate:  100 },
                 { maxQty:  150, rate:  150 },
@@ -145,9 +183,10 @@ export const SUGGESTED_RATES = {
                 { maxQty:  600, rate:  300 },
                 { maxQty: Infinity, rate: 400 },
             ],
-            depthBreaks: null,  // DGA rate driven by volume, not depth
+            depthBreaks: null,
         },
         milling: {
+            // MS DOT urban: 2,000-3,000 SY/day; WisDOT thin low: 8,500
             tiers: [
                 { maxQty:  1000, rate: 2000 },
                 { maxQty:  3000, rate: 3000 },
@@ -156,12 +195,13 @@ export const SUGGESTED_RATES = {
                 { maxQty: Infinity, rate: 6000 },
             ],
             depthBreaks: [
-                { maxDepth: 2.0, factor: 1.00 },  // standard thin mill
-                { maxDepth: 3.0, factor: 0.80 },   // moderate depth
-                { maxDepth: Infinity, factor: 0.65 }, // deep mill 4"+
+                { maxDepth: 2.0, factor: 1.00 },   // WisDOT thin (0-2"): baseline
+                { maxDepth: 3.0, factor: 0.80 },   // WisDOT thick ratio: 14k/17k = 0.82
+                { maxDepth: Infinity, factor: 0.65 }, // extrapolated from MnDOT research
             ],
         },
         paving_base: {
+            // Industry small crew: 1,000-2,000 SY/day
             tiers: [
                 { maxQty:   500, rate:  750 },
                 { maxQty:  1500, rate: 1000 },
@@ -170,12 +210,14 @@ export const SUGGESTED_RATES = {
                 { maxQty: Infinity, rate: 2500 },
             ],
             depthBreaks: [
-                { maxDepth: 2.5, factor: 1.00 },  // standard 2" base
-                { maxDepth: 3.5, factor: 0.85 },   // thick base 3"
-                { maxDepth: Infinity, factor: 0.70 }, // very thick 4"+
+                // Tonnage math: 110 lbs/SY/inch; SY/day inversely proportional to depth
+                { maxDepth: 2.5, factor: 1.00 },   // standard 2" base
+                { maxDepth: 3.5, factor: 0.75 },   // 2"→3": 7,900/11,800 = 0.67 (rounded up for non-tonnage-limited jobs)
+                { maxDepth: Infinity, factor: 0.55 }, // 2"→4": 5,900/11,800 = 0.50 (rounded up slightly)
             ],
         },
         paving_surface: {
+            // Industry small crew: 2,000-4,000 SY/day for thin lifts
             tiers: [
                 { maxQty:  1000, rate: 2000 },
                 { maxQty:  3000, rate: 3000 },
@@ -184,14 +226,16 @@ export const SUGGESTED_RATES = {
                 { maxQty: Infinity, rate: 5000 },
             ],
             depthBreaks: [
-                { maxDepth: 1.5, factor: 1.00 },  // standard surface
-                { maxDepth: 2.5, factor: 0.85 },   // thick surface
-                { maxDepth: Infinity, factor: 0.70 },
+                // Tonnage math: 1.5"→2.5" = 9,500/15,700 = 0.60
+                { maxDepth: 1.5, factor: 1.00 },   // standard 1.5" surface
+                { maxDepth: 2.5, factor: 0.75 },   // tonnage-derived ~0.60, rounded up
+                { maxDepth: Infinity, factor: 0.55 }, // very thick surface lift
             ],
         },
     },
     roadway: {
         excavation: {
+            // WisDOT truck-based: 250/600/1,300 CY/day
             tiers: [
                 { maxQty:  100, rate:  200 },
                 { maxQty:  400, rate:  300 },
@@ -202,15 +246,17 @@ export const SUGGESTED_RATES = {
             depthBreaks: null,
         },
         fine_grading: {
+            // AZDOT: 3,000-4,000 SY/day for grading roadway for pavement
             tiers: [
-                { maxQty:  3000, rate: 4000 },
-                { maxQty:  8000, rate: 6000 },
-                { maxQty: 15000, rate: 8000 },
-                { maxQty: Infinity, rate: 8000 },
+                { maxQty:  3000, rate: 3000 },
+                { maxQty:  8000, rate: 4000 },
+                { maxQty: 15000, rate: 5000 },
+                { maxQty: Infinity, rate: 6000 },
             ],
             depthBreaks: null,
         },
         dga_base: {
+            // AZDOT: Urban 750-1,200, Rural 1,500-2,000 CY/day
             tiers: [
                 { maxQty:  150, rate:  300 },
                 { maxQty:  500, rate:  500 },
@@ -220,6 +266,7 @@ export const SUGGESTED_RATES = {
             depthBreaks: null,
         },
         milling: {
+            // WisDOT: thin 8,500/17,000/25,000; thick 8,000/14,000/20,000
             tiers: [
                 { maxQty:  3000, rate:  6000 },
                 { maxQty:  8000, rate: 10000 },
@@ -228,12 +275,13 @@ export const SUGGESTED_RATES = {
                 { maxQty: Infinity, rate: 25000 },
             ],
             depthBreaks: [
-                { maxDepth: 2.0, factor: 1.00 },
-                { maxDepth: 3.0, factor: 0.80 },
-                { maxDepth: Infinity, factor: 0.65 },
+                { maxDepth: 2.0, factor: 1.00 },   // WisDOT thin baseline
+                { maxDepth: 3.0, factor: 0.80 },   // WisDOT thick ratio: 0.82
+                { maxDepth: Infinity, factor: 0.65 }, // extrapolated
             ],
         },
         paving_base: {
+            // WisDOT: 700-1,800 tons/day; at 2" = ~6,400-16,400 SY/day
             tiers: [
                 { maxQty:  2000, rate: 2000 },
                 { maxQty:  5000, rate: 3000 },
@@ -242,11 +290,12 @@ export const SUGGESTED_RATES = {
             ],
             depthBreaks: [
                 { maxDepth: 2.5, factor: 1.00 },
-                { maxDepth: 3.5, factor: 0.85 },
-                { maxDepth: Infinity, factor: 0.70 },
+                { maxDepth: 3.5, factor: 0.75 },   // tonnage math: 2"→3" = 0.67
+                { maxDepth: Infinity, factor: 0.55 }, // tonnage math: 2"→4" = 0.50
             ],
         },
         paving_surface: {
+            // WisDOT: 700-1,800 tons/day; at 1.5" = ~8,500-21,800 SY/day
             tiers: [
                 { maxQty:  3000, rate: 3500 },
                 { maxQty:  8000, rate: 5000 },
@@ -255,26 +304,35 @@ export const SUGGESTED_RATES = {
             ],
             depthBreaks: [
                 { maxDepth: 1.5, factor: 1.00 },
-                { maxDepth: 2.5, factor: 0.85 },
-                { maxDepth: Infinity, factor: 0.70 },
+                { maxDepth: 2.5, factor: 0.75 },   // tonnage math: 1.5"→2.5" = 0.60
+                { maxDepth: Infinity, factor: 0.55 },
             ],
         },
     },
 };
 
 // ============================================
-// HISTORICAL BENCHMARKS
-// Excavation & DGA: $/CY (volume-driven, depth-independent)
+// HISTORICAL BENCHMARKS — unit cost reasonableness ranges
+// Excavation & DGA: $/CY (volume-driven)
 // All others: $/SY (area-driven)
-// Historical bid data for parking lot
-// WisDOT FY2024 Average Unit Price List for roadway
+//
+// Sources:
+//   parking_lot fine_grading, milling, paving_base, paving_surface:
+//     Historical bid data (empirical, sample sizes shown)
+//   parking_lot excavation, dga_base:
+//     Derived estimates — original bid data was $/SY with bundled costs,
+//     $/CY ranges estimated from industry pricing (no direct sample)
+//   roadway (all):
+//     Derived — estimated from WisDOT FY2024 Average Unit Price List
+//     and industry cost guides, no direct bid tab extraction
+//   tack_coat: derived from application rate × material cost
 // ============================================
 
 export const BENCHMARKS = {
     parking_lot: {
-        excavation:     { p25: 12.00, median: 18.00, p75: 28.00, n: 19,  basis: 'empirical', unit: 'CY' },
+        excavation:     { p25: 12.00, median: 18.00, p75: 28.00, n: 0,   basis: 'derived',   unit: 'CY' },
         fine_grading:   { p25:  0.77, median:  0.92, p75:  1.12, n: 507, basis: 'empirical', unit: 'SY' },
-        dga_base:       { p25: 35.00, median: 50.00, p75: 70.00, n: 103, basis: 'empirical', unit: 'CY' },
+        dga_base:       { p25: 35.00, median: 50.00, p75: 70.00, n: 0,   basis: 'derived',   unit: 'CY' },
         milling:        { p25:  2.95, median:  3.64, p75:  4.58, n: 516, basis: 'empirical', unit: 'SY' },
         paving_base:    { p25: 22.31, median: 28.10, p75: 35.26, n: 162, basis: 'empirical', unit: 'SY' },
         paving_surface: { p25: 10.30, median: 11.09, p75: 12.25, n: 163, basis: 'empirical', unit: 'SY' },
