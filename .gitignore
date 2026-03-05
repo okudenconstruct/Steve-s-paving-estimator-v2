@@ -22,6 +22,11 @@ Thumbs.db
 *.log
 npm-debug.log*
 
+# Signing keys — NEVER commit these
+*.jks
+*.keystore
+keystore.properties
+
 # Claude Code
 .claude/
 
