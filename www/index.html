@@ -985,6 +985,7 @@
                     <div class="cost-line"><span class="label">Bonds & Insurance</span><span class="value" id="biTotalDisplay">$0</span></div>
                     <div class="cost-line"><span class="label">Subtotal (pre-contingency)</span><span class="value" id="subtotalBeforeContDisplay">$0</span></div>
                     <div class="cost-line"><span class="label">Contingency</span><span class="value" id="contingencyDisplay">$0</span></div>
+                    <div class="cost-recommendation" id="contingencyRecommendation" style="display:none; font-size: 0.8em; color: var(--text-muted); padding: 0 16px 8px; font-style: italic;"></div>
                 </div>
             </div>
         </div>
@@ -1018,7 +1019,7 @@
                 </div>
 
                 <div class="cost-category">
-                    <h4>Labor & Equipment</h4>
+                    <h4>Labor</h4>
                     <div class="cost-line">
                         <span class="label">Excavation</span>
                         <span class="value" id="costLaborExc">$0</span>
@@ -1046,6 +1047,38 @@
                     <div class="cost-line subtotal">
                         <span class="label">Labor Subtotal</span>
                         <span class="value" id="subtotalLabor">$0</span>
+                    </div>
+                </div>
+
+                <div class="cost-category">
+                    <h4>Equipment</h4>
+                    <div class="cost-line">
+                        <span class="label">Excavation</span>
+                        <span class="value" id="costEquipExc">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">Fine Grading</span>
+                        <span class="value" id="costEquipFG">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">DGA</span>
+                        <span class="value" id="costEquipDGA">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">Milling</span>
+                        <span class="value" id="costEquipMill">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">Base Paving</span>
+                        <span class="value" id="costEquipBase">$0</span>
+                    </div>
+                    <div class="cost-line">
+                        <span class="label">Surface Paving</span>
+                        <span class="value" id="costEquipSurf">$0</span>
+                    </div>
+                    <div class="cost-line subtotal">
+                        <span class="label">Equipment Subtotal</span>
+                        <span class="value" id="subtotalEquipment">$0</span>
                     </div>
                 </div>
 
@@ -1108,6 +1141,15 @@
                         <span class="value" id="subtotalMob">$0</span>
                     </div>
                 </div>
+
+                <!-- Safety Cost (roadway mode, v4.1) -->
+                <div class="cost-category" id="safetyCostRow" style="display:none;">
+                    <h4>Safety / Traffic Control</h4>
+                    <div class="cost-line subtotal">
+                        <span class="label">Safety Crew Cost</span>
+                        <span class="value" id="safetyCostDisplay">$0</span>
+                    </div>
+                </div>
             </div>
 
             <div class="cost-totals">
@@ -1142,6 +1184,10 @@
                     <div class="unit-cost-stat">
                         <div class="label">Labor %</div>
                         <div class="value" id="laborPct">—</div>
+                    </div>
+                    <div class="unit-cost-stat">
+                        <div class="label">Equipment %</div>
+                        <div class="value" id="equipmentPct">—</div>
                     </div>
                 </div>
             </div>

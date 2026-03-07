@@ -248,7 +248,14 @@ export class Renderer {
         for (const ar of results.activities) {
             if (laborMap[ar.activityType]) sv(laborMap[ar.activityType], fc(ar.laborCost));
         }
-        sv('subtotalLabor', fc(results.totalLaborCost + results.totalEquipmentCost));
+        sv('subtotalLabor', fc(results.totalLaborCost));
+
+        // Equipment by activity
+        const equipMap = { excavation: 'costEquipExc', fine_grading: 'costEquipFG', dga_base: 'costEquipDGA', milling: 'costEquipMill', paving_base: 'costEquipBase', paving_surface: 'costEquipSurf' };
+        for (const ar of results.activities) {
+            if (equipMap[ar.activityType]) sv(equipMap[ar.activityType], fc(ar.equipmentCost));
+        }
+        sv('subtotalEquipment', fc(results.totalEquipmentCost));
 
         // Trucking by activity
         const truckMap = { excavation: 'costTruckExc', dga_base: 'costTruckDGA', milling: 'costTruckMill', paving_base: 'costTruckBase', paving_surface: 'costTruckSurf' };
@@ -257,12 +264,31 @@ export class Renderer {
         }
         sv('subtotalTrucking', fc(results.totalTruckingCost));
 
-        // Mobilization by activity
-        const mobMap = { excavation: 'costMobExc', fine_grading: 'costMobFG', dga_base: 'costMobDGA', milling: 'costMobMill', paving_base: 'costMobBase', paving_surface: 'costMobSurf' };
-        for (const ar of results.activities) {
-            if (mobMap[ar.activityType]) sv(mobMap[ar.activityType], fc(ar.mobilizationCost));
+        // Mobilization by activity (activity-level mob or cluster mob)
+        if (results.clusterResults && results.clusterMobCost > 0) {
+            // Cluster mode: show cluster mob total (replaces per-activity mob)
+            const mobMap = { excavation: 'costMobExc', fine_grading: 'costMobFG', dga_base: 'costMobDGA', milling: 'costMobMill', paving_base: 'costMobBase', paving_surface: 'costMobSurf' };
+            for (const key of Object.values(mobMap)) sv(key, '—');
+            sv('subtotalMob', fc(results.clusterMobCost));
+        } else {
+            // Activity-level mob
+            const mobMap = { excavation: 'costMobExc', fine_grading: 'costMobFG', dga_base: 'costMobDGA', milling: 'costMobMill', paving_base: 'costMobBase', paving_surface: 'costMobSurf' };
+            for (const ar of results.activities) {
+                if (mobMap[ar.activityType]) sv(mobMap[ar.activityType], fc(ar.mobilizationCost));
+            }
+            sv('subtotalMob', fc(results.totalMobilizationCost));
         }
-        sv('subtotalMob', fc(results.totalMobilizationCost));
+
+        // Safety cost line (roadway mode, in waterfall)
+        const safetyRow = document.getElementById('safetyCostRow');
+        if (safetyRow) {
+            if (results.safetyCostTotal > 0) {
+                safetyRow.style.display = '';
+                sv('safetyCostDisplay', fc(results.safetyCostTotal));
+            } else {
+                safetyRow.style.display = 'none';
+            }
+        }
 
         // Totals
         sv('directCostTotal', fc(results.directCostTotal));
@@ -276,6 +302,18 @@ export class Renderer {
         sv('biTotalDisplay', fc(results.biTotal));
         sv('subtotalBeforeContDisplay', fc(results.subtotalBeforeContingency));
         sv('contingencyDisplay', fc(results.totalContingency));
+
+        // Contingency recommendation (Issue 5 — confidence-linked)
+        const recEl = document.getElementById('contingencyRecommendation');
+        if (recEl && results.contingencyRecommendation) {
+            const rec = results.contingencyRecommendation;
+            const desc = results.confidenceScore?.descriptor || '';
+            const cls = results.estimateClassLabel || '';
+            recEl.textContent = `Recommended: ${(rec.min * 100).toFixed(0)}%-${(rec.max * 100).toFixed(0)}% (${cls}, ${desc} confidence)`;
+            recEl.style.display = 'block';
+        } else if (recEl) {
+            recEl.style.display = 'none';
+        }
 
         // Markup amount (backward compat: fee/profit is the new markup)
         sv('markupAmount', fc(results.feeProfit));
@@ -298,7 +336,8 @@ export class Renderer {
         sv('costPerSY', totalPavedSY > 0 ? fc(Math.round(results.totalEstimatedCost / totalPavedSY)) + '/SY' : '—');
         sv('costPerTon', totalHMA > 0 ? fc(Math.round(results.totalEstimatedCost / totalHMA)) + '/ton' : '—');
         sv('materialsPct', results.directCostTotal > 0 ? (results.totalMaterialCost / results.directCostTotal * 100).toFixed(1) + '%' : '—');
-        sv('laborPct', results.directCostTotal > 0 ? ((results.totalLaborCost + results.totalEquipmentCost) / results.directCostTotal * 100).toFixed(1) + '%' : '—');
+        sv('laborPct', results.directCostTotal > 0 ? (results.totalLaborCost / results.directCostTotal * 100).toFixed(1) + '%' : '—');
+        sv('equipmentPct', results.directCostTotal > 0 ? (results.totalEquipmentCost / results.directCostTotal * 100).toFixed(1) + '%' : '—');
     }
 
     static _renderValidation(warnings) {

@@ -49,26 +49,26 @@ export function generateAnalysis(snapshot) {
             }
         }
 
-        // Rule 2: Unit cost vs benchmark
+        // Rule 2: Unit cost vs benchmark (enhanced with component diagnosis — Issue 6)
         if (bm && a.unitCost && a.unitCost > 0) {
             const uom = bm.unit || 'SY';
             const status = _getUnitCostStatus(a.unitCost, bm);
-            if (status === 'VERY_HIGH') {
-                add(a.activityType, 'UNIT_COST', 'WARNING',
-                    `${a.description}: Unit cost $${a.unitCost.toFixed(2)}/${uom} is significantly above P75 ($${bm.p75.toFixed(2)}).`,
-                    [`Benchmark median: $${bm.median.toFixed(2)}/${uom} (n=${bm.n})`, 'Review crew rate, production rate, or material cost']);
-            } else if (status === 'HIGH') {
-                add(a.activityType, 'UNIT_COST', 'INFO',
-                    `${a.description}: Unit cost $${a.unitCost.toFixed(2)}/${uom} is above P75 ($${bm.p75.toFixed(2)}).`,
-                    [`Benchmark range: $${bm.p25.toFixed(2)}-$${bm.p75.toFixed(2)}/${uom}`]);
-            } else if (status === 'VERY_LOW') {
-                add(a.activityType, 'UNIT_COST', 'WARNING',
-                    `${a.description}: Unit cost $${a.unitCost.toFixed(2)}/${uom} is significantly below P25 ($${bm.p25.toFixed(2)}).`,
-                    [`Benchmark median: $${bm.median.toFixed(2)}/${uom} (n=${bm.n})`, 'May indicate missing cost components']);
-            } else if (status === 'LOW') {
-                add(a.activityType, 'UNIT_COST', 'INFO',
-                    `${a.description}: Unit cost $${a.unitCost.toFixed(2)}/${uom} is below P25 ($${bm.p25.toFixed(2)}).`,
-                    [`Benchmark range: $${bm.p25.toFixed(2)}-$${bm.p75.toFixed(2)}/${uom}`]);
+            const reasons = [];
+
+            if (status === 'VERY_HIGH' || status === 'HIGH') {
+                reasons.push(`Benchmark ${status === 'VERY_HIGH' ? 'median' : 'range'}: ${status === 'VERY_HIGH' ? `$${bm.median.toFixed(2)}/${uom} (n=${bm.n})` : `$${bm.p25.toFixed(2)}-$${bm.p75.toFixed(2)}/${uom}`}`);
+                // Diagnose dominant cost component
+                reasons.push(..._diagnoseCostDrivers(a, uom, 'high'));
+                add(a.activityType, 'UNIT_COST', status === 'VERY_HIGH' ? 'WARNING' : 'INFO',
+                    `${a.description}: Unit cost $${a.unitCost.toFixed(2)}/${uom} is ${status === 'VERY_HIGH' ? 'significantly ' : ''}above P75 ($${bm.p75.toFixed(2)}).`,
+                    reasons);
+            } else if (status === 'VERY_LOW' || status === 'LOW') {
+                reasons.push(`Benchmark ${status === 'VERY_LOW' ? 'median' : 'range'}: ${status === 'VERY_LOW' ? `$${bm.median.toFixed(2)}/${uom} (n=${bm.n})` : `$${bm.p25.toFixed(2)}-$${bm.p75.toFixed(2)}/${uom}`}`);
+                // Diagnose missing or low components
+                reasons.push(..._diagnoseCostDrivers(a, uom, 'low'));
+                add(a.activityType, 'UNIT_COST', status === 'VERY_LOW' ? 'WARNING' : 'INFO',
+                    `${a.description}: Unit cost $${a.unitCost.toFixed(2)}/${uom} is ${status === 'VERY_LOW' ? 'significantly ' : ''}below P25 ($${bm.p25.toFixed(2)}).`,
+                    reasons);
             }
         }
 
@@ -185,5 +185,73 @@ export function generateAnalysis(snapshot) {
         }
     }
 
+    // Rule 12: Fee/Profit bounds (Issue 4)
+    if (snapshot.feeProfitPct !== undefined) {
+        const pct = snapshot.feeProfitPct;
+        if (pct > 25) {
+            add('global', 'FEE_HIGH', 'WARNING',
+                `Fee/Profit markup at ${pct}% — above typical paving range (8-20%).`,
+                ['High markup may reduce competitiveness in bid scenarios',
+                 'Verify overhead allocation is not double-counted in GC items']);
+        } else if (pct > 0 && pct < 5) {
+            add('global', 'FEE_LOW', 'INFO',
+                `Fee/Profit markup at ${pct}% — below typical paving range (8-20%).`,
+                ['Low markup may indicate self-performed or cost-plus work',
+                 'Verify home office overhead is covered separately']);
+        }
+    }
+
     return observations;
+}
+
+/**
+ * Diagnose which cost component is driving unit cost variance.
+ * Returns actionable corrective text based on dominant component.
+ * @param {Object} a - Activity result with laborCost, equipmentCost, materialCost, truckingCost, grossQuantity
+ * @param {string} uom - Unit of measure (SY or CY)
+ * @param {string} direction - 'high' or 'low'
+ * @returns {string[]} Corrective reasons
+ */
+function _diagnoseCostDrivers(a, uom, direction) {
+    const reasons = [];
+    const qty = a.grossQuantity || 0;
+    if (qty <= 0) return reasons;
+
+    const components = [
+        { name: 'Labor', cost: a.laborCost || 0, perUnit: (a.laborCost || 0) / qty },
+        { name: 'Equipment', cost: a.equipmentCost || 0, perUnit: (a.equipmentCost || 0) / qty },
+        { name: 'Material', cost: a.materialCost || 0, perUnit: (a.materialCost || 0) / qty },
+        { name: 'Trucking', cost: a.truckingCost || 0, perUnit: (a.truckingCost || 0) / qty },
+    ];
+
+    const totalCost = components.reduce((s, c) => s + c.cost, 0);
+    if (totalCost <= 0) return reasons;
+
+    if (direction === 'high') {
+        // Find the dominant component
+        const sorted = [...components].sort((a, b) => b.perUnit - a.perUnit);
+        const dominant = sorted[0];
+        const pct = (dominant.cost / totalCost * 100).toFixed(0);
+
+        const corrective = {
+            'Labor': `consider a larger crew to reduce duration, or verify crew rate ($${a.crewHourlyCost?.toFixed(2) || '?'}/hr)`,
+            'Equipment': 'check equipment ownership cost assumptions',
+            'Material': 'verify current material unit pricing against market',
+            'Trucking': 'review cycle time and haul distance — reduce trips or increase truck capacity',
+        };
+
+        reasons.push(`${dominant.name} is largest component at $${dominant.perUnit.toFixed(2)}/${uom} (${pct}% of production cost) — ${corrective[dominant.name] || 'review assumptions'}`);
+    } else {
+        // Check for missing components ($0)
+        const missing = components.filter(c => c.cost === 0 && c.name !== 'Equipment');
+        if (missing.length > 0) {
+            const names = missing.map(c => c.name.toLowerCase()).join(', ');
+            reasons.push(`No ${names} cost included — verify scope completeness`);
+        } else {
+            // All present but low — systemic issue
+            reasons.push('All cost components present but below benchmark — verify crew rate and production rate assumptions');
+        }
+    }
+
+    return reasons;
 }

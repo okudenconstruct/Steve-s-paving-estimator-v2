@@ -21,8 +21,9 @@ import { EstimateStore } from './storage/EstimateStore.js';
 import { Renderer } from './ui/Renderer.js';
 import { ExportService } from './ui/ExportService.js';
 import { ACTIVITY_CONFIG, DEFAULT_DEPENDENCIES, RATE_OPTIONS, DEFAULT_CREW_SIZES, SCOPE_ITEMS, CREW_DATA, CREW_THRESHOLDS, PRODUCTION_RATES, BENCHMARKS, SUGGESTED_RATES } from './data/paving-defaults.js';
+import { CREW_COMPOSITIONS } from './data/CrewCompositions.js';
 import { MATERIAL_PRICES } from './data/constants.js';
-import { calculateConfidence, _getUnitCostStatus } from './engine/Confidence.js';
+import { calculateConfidence, _getUnitCostStatus, getContingencyRecommendation } from './engine/Confidence.js';
 import { generateAnalysis } from './engine/AnalysisEngine.js';
 
 // ---- Global state ----
@@ -264,11 +265,15 @@ function buildEstimateFromUI() {
         }
         // For milling/paving when COMBO is detected, use the COMBO crew
         if (useCombo && (activityType === 'milling' || activityType === 'paving_base' || activityType === 'paving_surface')) {
+            // Prefer detailed composition for COMBO
+            if (CREW_COMPOSITIONS['COMBO']) {
+                return Crew.fromDetailedData('COMBO', CREW_COMPOSITIONS['COMBO']);
+            }
             const comboData = CREW_DATA['COMBO'];
             if (comboData) return Crew.fromCrewData('COMBO', comboData);
         }
-        // Auto-select based on job size
-        const result = Crew.autoSelect(totalJobSY, activityType, CREW_THRESHOLDS, CREW_DATA);
+        // Auto-select based on job size (prefers detailed compositions)
+        const result = Crew.autoSelect(totalJobSY, activityType, CREW_THRESHOLDS, CREW_DATA, CREW_COMPOSITIONS);
         if (result) return result.crew;
         // Ultimate fallback
         return Crew.fromComposite(fallbackId, fallbackName, manualRate, manualHeadcount);
@@ -595,24 +600,38 @@ function calculateWithTruckingOverrides(est, truckingRate) {
         ar._extra = activity._extra;
     }
 
-    // Recalculate direct cost total
-    results.directCostTotal = results.activities.reduce((sum, ar) =>
-        sum + ar.laborCost + ar.equipmentCost + ar.materialCost + ar.mobilizationCost + ar.truckingCost, 0);
+    // Recalculate direct cost total (consistent with Calculator.js Phase 5.1 logic)
+    const activityCosts = results.activities.reduce((sum, ar) =>
+        sum + ar.laborCost + ar.equipmentCost + ar.materialCost + ar.truckingCost, 0);
+    const effectiveMob = results.clusterResults ? (results.clusterMobCost || 0) :
+        results.activities.reduce((sum, ar) => sum + ar.mobilizationCost, 0);
+    const safetyCost = results.safetyCostTotal || 0;
+    results.directCostTotal = activityCosts + effectiveMob + safetyCost;
 
     // Recalculate indirect costs with corrected direct cost
-    const laborCostForIndirect = results.totalLaborCost + results.totalEquipmentCost;
+    // Labor-only: %-based GC items (small tools, safety PPE) and B&I items
+    // (GL insurance, WC) apply to labor cost only, not equipment.
+    const laborCostForIndirect = results.totalLaborCost;
     const indirectResults = est.indirectCosts.calculate(
         results.directCostTotal, laborCostForIndirect, results.projectDuration
     );
     Object.assign(results, indirectResults);
 
-    // Recalculate unit checks with corrected unit costs
+    // Recalculate unit checks with corrected unit costs (includes Issue 6 breakdown)
     results.unitChecks = results.activities
         .filter(a => a.duration > 0 && a.unitCost > 0)
         .map(a => {
             const bm = benchmarks[a.activityType];
             if (!bm) return null;
             const status = _getUnitCostStatus(a.unitCost, bm);
+            const useCY = bm && bm.unit === 'CY';
+            const denom = useCY ? a.grossQuantity : (a.netQuantity || a.grossQuantity);
+            const breakdown = denom > 0 ? {
+                labor: a.laborCost / denom,
+                equipment: a.equipmentCost / denom,
+                material: a.materialCost / denom,
+                trucking: a.truckingCost / denom,
+            } : null;
             return {
                 activityType: a.activityType,
                 description: a.description,
@@ -625,6 +644,7 @@ function calculateWithTruckingOverrides(est, truckingRate) {
                 basis: bm.basis,
                 unit: bm.unit || 'SY',
                 status,
+                breakdown,
             };
         })
         .filter(Boolean);
@@ -636,6 +656,14 @@ function calculateWithTruckingOverrides(est, truckingRate) {
     });
     est.confidenceScore = results.confidenceScore;
 
+    // Recalculate contingency recommendation (Issue 5)
+    const estimateClass = est.indirectCosts.contingency.estimateClass;
+    results.contingencyRecommendation = getContingencyRecommendation(
+        results.confidenceScore.descriptor,
+        estimateClass
+    );
+    results.estimateClassLabel = estimateClass.label;
+
     // Recalculate analysis with corrected data
     results.analysisResults = generateAnalysis({
         activities: results.activities,
@@ -643,6 +671,7 @@ function calculateWithTruckingOverrides(est, truckingRate) {
         clusterResults: results.clusterResults,
         scopeAssumptions: est.scopeAssumptions,
         totalHMATons: results.totalHMATons,
+        feeProfitPct: est.indirectCosts.feeProfitPct,
     });
     est.analysisResults = results.analysisResults;
 

@@ -166,6 +166,32 @@ function _getDescriptor(composite) {
     return 'LOW';
 }
 
+/**
+ * Map confidence descriptor to a suggested contingency range within the estimate class bounds.
+ * LOW confidence → upper portion of range; HIGH confidence → lower portion.
+ *
+ * @param {string} confidenceDescriptor - 'HIGH', 'MOD-HIGH', 'MODERATE', or 'LOW'
+ * @param {Object} estimateClass - From EstimateClass (e.g., CLASS_3 with contingencyRange [0.10, 0.30])
+ * @returns {{ min: number, suggested: number, max: number }} - Contingency % as decimal
+ */
+export function getContingencyRecommendation(confidenceDescriptor, estimateClass) {
+    const [classMin, classMax] = estimateClass.contingencyRange;
+    const range = classMax - classMin;
+
+    switch (confidenceDescriptor) {
+        case 'HIGH':
+            return { min: classMin, suggested: classMin, max: classMin + range * 0.25 };
+        case 'MOD-HIGH':
+            return { min: classMin, suggested: classMin + range * 0.33, max: classMin + range * 0.5 };
+        case 'MODERATE':
+            return { min: classMin + range * 0.25, suggested: (classMin + classMax) / 2, max: classMax };
+        case 'LOW':
+            return { min: classMin + range * 0.5, suggested: classMax * 0.8, max: classMax };
+        default:
+            return { min: classMin, suggested: estimateClass.defaultContingency, max: classMax };
+    }
+}
+
 function _emptyResult() {
     const empty = { score: 0, details: [] };
     return {

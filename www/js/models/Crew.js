@@ -3,6 +3,8 @@
 // Named, reusable resource assembly
 // ============================================
 
+import { Resource, ResourceType, SourceRank } from './Resource.js';
+
 export class Crew {
     /**
      * @param {Object} params
@@ -132,19 +134,76 @@ export class Crew {
     }
 
     /**
+     * Create a detailed crew from a CREW_COMPOSITIONS entry.
+     * Populates laborComponents and equipmentComponents with Resource objects,
+     * enabling the labor/equipment cost split.
+     *
+     * @param {string} code - Crew code (e.g., "PV8")
+     * @param {Object} comp - CREW_COMPOSITIONS entry
+     * @returns {Crew}
+     */
+    static fromDetailedData(code, comp) {
+        const laborComponents = comp.laborComponents.map((lc, i) => ({
+            resource: new Resource({
+                id: `L-${code}-${i}`,
+                name: lc.name,
+                type: ResourceType.LABOR,
+                unitId: 'HR',
+                costRate: lc.rate,
+                source: comp.source || '',
+                sourceRank: comp.sourceRank || SourceRank.FIRST_PRINCIPLES,
+            }),
+            count: lc.count,
+        }));
+
+        const equipmentComponents = comp.equipmentComponents.map((ec, i) => ({
+            resource: new Resource({
+                id: ec.code || `E-${code}-${i}`,
+                name: ec.name,
+                type: ResourceType.EQUIPMENT,
+                unitId: 'HR',
+                costRate: ec.rate,
+                source: comp.source || '',
+                sourceRank: comp.sourceRank || SourceRank.FIRST_PRINCIPLES,
+            }),
+            count: ec.count,
+        }));
+
+        const crew = new Crew({
+            id: `C-${code}`,
+            name: comp.description,
+            laborComponents,
+            equipmentComponents,
+        });
+        crew._headcount = comp.people;
+        return crew;
+    }
+
+    /**
      * Auto-select crew based on job size (SY) and activity type.
+     * Prefers detailed compositions when available (for labor/equipment split).
+     *
      * @param {number} totalSY - Total job size in SY
      * @param {string} activityType - Activity type key
      * @param {Object} thresholds - CREW_THRESHOLDS
-     * @param {Object} crewData - CREW_DATA
+     * @param {Object} crewData - CREW_DATA (composite rates)
+     * @param {Object} [compositions] - CREW_COMPOSITIONS (detailed breakdowns)
      * @returns {{ code: string, crew: Crew } | null}
      */
-    static autoSelect(totalSY, activityType, thresholds, crewData) {
+    static autoSelect(totalSY, activityType, thresholds, crewData, compositions = null) {
         const tiers = thresholds[activityType] || thresholds.paving;
         if (!tiers) return null;
 
         for (const tier of tiers) {
             if (totalSY <= tier.maxSY) {
+                // Prefer detailed composition if available
+                if (compositions && compositions[tier.crew]) {
+                    return {
+                        code: tier.crew,
+                        crew: Crew.fromDetailedData(tier.crew, compositions[tier.crew]),
+                    };
+                }
+                // Fallback to composite rate
                 const data = crewData[tier.crew];
                 if (data) {
                     return {

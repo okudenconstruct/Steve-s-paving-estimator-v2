@@ -8,7 +8,7 @@
 import { Scheduler } from './Scheduler.js';
 import { calcThreeTier } from './ThreeTier.js';
 import { clusterize } from './ClusterEngine.js';
-import { calculateConfidence } from './Confidence.js';
+import { calculateConfidence, getContingencyRecommendation } from './Confidence.js';
 import { generateAnalysis } from './AnalysisEngine.js';
 import { calculateCalendarDuration } from './CalendarDuration.js';
 import { MATERIAL_PRICES } from '../data/constants.js';
@@ -160,9 +160,6 @@ export class Calculator {
             }
         }
 
-        const directCostTotal = totalLaborCost + totalEquipmentCost + totalMaterialCost +
-            totalTruckingCost + totalMobilizationCost;
-
         // ---- Phase 5: Clustering + Mobilization + Safety ----
         let clusterResults = null;
         if (estimate.clusterMode) {
@@ -174,9 +171,20 @@ export class Calculator {
             estimate.clusterResults = clusterResults;
         }
 
+        // ---- Phase 5.1: Compute directCostTotal (moved after clustering) ----
+        // When cluster mode is active, cluster mob replaces activity-level mob
+        // to avoid double-counting. Safety cost (roadway) is always additive.
+        const clusterMobCost = clusterResults ? clusterResults.totalMobCost : 0;
+        const safetyCostTotal = clusterResults ? clusterResults.safetyCost : 0;
+        const effectiveMobCost = clusterResults ? clusterMobCost : totalMobilizationCost;
+        const directCostTotal = totalLaborCost + totalEquipmentCost + totalMaterialCost +
+            totalTruckingCost + effectiveMobCost + safetyCostTotal;
+
         // ---- Phase 6: Indirect costs (uses projectDuration from CPM) ----
         // Axiom 5: Time-dependent costs use concurrent schedule, not sum of durations.
-        const laborCostForIndirect = totalLaborCost + totalEquipmentCost;
+        // Labor-only: %-based GC items (small tools, safety PPE) and B&I items
+        // (GL insurance, WC) apply to labor cost only, not equipment.
+        const laborCostForIndirect = totalLaborCost;
         const indirectResults = estimate.indirectCosts.calculate(
             directCostTotal,
             laborCostForIndirect,
@@ -191,6 +199,13 @@ export class Calculator {
         const confidenceScore = calculateConfidence(confidenceSnapshot);
         estimate.confidenceScore = confidenceScore;
 
+        // ---- Phase 7.1: Contingency recommendation (links confidence → contingency) ----
+        const estimateClass = estimate.indirectCosts.contingency.estimateClass;
+        const contingencyRecommendation = getContingencyRecommendation(
+            confidenceScore.descriptor,
+            estimateClass
+        );
+
         // ---- Phase 8: Unit cost reasonableness check ----
         const benchmarks = BENCHMARKS[estimate.jobMode] || BENCHMARKS.parking_lot;
         const unitChecks = activityResults
@@ -203,6 +218,17 @@ export class Calculator {
                 else if (a.unitCost < bm.p25)          status = 'LOW';
                 else if (a.unitCost > bm.p75 * 1.5)   status = 'VERY_HIGH';
                 else if (a.unitCost > bm.p75)          status = 'HIGH';
+
+                // Per-component unit cost breakdown (Issue 6)
+                const useCY = bm && bm.unit === 'CY';
+                const denom = useCY ? a.grossQuantity : (a.netQuantity || a.grossQuantity);
+                const breakdown = denom > 0 ? {
+                    labor: a.laborCost / denom,
+                    equipment: a.equipmentCost / denom,
+                    material: a.materialCost / denom,
+                    trucking: a.truckingCost / denom,
+                } : null;
+
                 return {
                     activityType: a.activityType,
                     description: a.description,
@@ -215,6 +241,7 @@ export class Calculator {
                     basis: bm.basis,
                     unit: bm.unit || 'SY',
                     status,
+                    breakdown,
                 };
             })
             .filter(Boolean);
@@ -226,6 +253,7 @@ export class Calculator {
             clusterResults,
             scopeAssumptions: estimate.scopeAssumptions,
             totalHMATons,
+            feeProfitPct: estimate.indirectCosts.feeProfitPct,
         });
         estimate.analysisResults = analysisResults;
 
@@ -256,20 +284,25 @@ export class Calculator {
             totalEquipmentCost,
             totalMaterialCost,
             totalTruckingCost,
-            totalMobilizationCost,
+            totalMobilizationCost,  // activity-level mob (may be superseded by cluster mob)
             totalTruckHours,
             directCostTotal,
             totalHMATons,
 
-            // Mobilization & Safety (v4.0)
+            // Mobilization & Safety (v4.0 + v4.1 waterfall integration)
             clusterResults,
+            clusterMobCost,         // cluster-level mob (in waterfall when cluster mode active)
+            safetyCostTotal,        // safety crew cost (in waterfall when roadway + cluster mode)
+            effectiveMobCost,       // whichever mob system is active
             mobAndSafety,
 
             // Indirect & markups
             ...indirectResults,
 
-            // Confidence & Analysis (v4.0)
+            // Confidence & Analysis (v4.0 + v4.1 contingency link)
             confidenceScore,
+            contingencyRecommendation,
+            estimateClassLabel: estimateClass.label,
             unitChecks,
             analysisResults,
 
