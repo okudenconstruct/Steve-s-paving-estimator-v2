@@ -1,5 +1,5 @@
 // ============================================
-// Calculation Engine v4.0
+// Calculation Engine v4.1
 // Bottom-up cost derivation with schedule integration
 // Tier 6.2 — Full recalculation propagation
 // Expanded to 11-phase pipeline

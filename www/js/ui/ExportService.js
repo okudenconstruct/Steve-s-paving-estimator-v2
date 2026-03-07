@@ -215,7 +215,7 @@ TOTAL ESTIMATED COST: ${fc(results.totalEstimatedCost)}
     static generateJSONExport(estimate, results) {
         const exportData = {
             meta: {
-                version: '4.0',
+                version: '4.1',
                 exportDate: new Date().toISOString(),
                 projectName: estimate.projectName,
                 jobMode: estimate.jobMode,

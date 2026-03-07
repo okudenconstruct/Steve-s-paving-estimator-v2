@@ -2,7 +2,7 @@
 
 > **Purpose of this document:** This is the authoritative technical specification for a Claude Project instance tasked with (1) researching and curating external data sources for crew labor/equipment rate breakdowns, material pricing, production rates, and benchmark data; and (2) generating precise, implementation-ready coding instructions for issues and improvements in this codebase. All data research should be shaped to fit the exact data structures, naming conventions, file locations, and calculation patterns described here.
 
-> **Current version:** 4.0 | **Date:** 2026-03-06
+> **Current version:** 4.1 | **Date:** 2026-03-07
 
 ---
 
