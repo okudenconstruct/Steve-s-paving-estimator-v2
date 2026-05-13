@@ -44,6 +44,10 @@ body {
     color: var(--text-primary);
     min-height: 100vh;
     line-height: 1.5;
+    /* Defend against accidental pull-to-refresh in some Android WebView builds */
+    overscroll-behavior-y: contain;
+    /* Remove the gray flash on tap that some Android WebViews still show */
+    -webkit-tap-highlight-color: transparent;
 }
 
 .container {
@@ -131,9 +135,11 @@ body {
     box-shadow: 0 2px 8px rgba(66, 165, 245, 0.3);
 }
 
-.btn-primary:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(66, 165, 245, 0.4);
+@media (hover: hover) {
+    .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(66, 165, 245, 0.4);
+    }
 }
 
 .btn-success {
@@ -152,8 +158,10 @@ body {
     border: 1px solid var(--border-color);
 }
 
-.btn-secondary:hover {
-    background: var(--border-color);
+@media (hover: hover) {
+    .btn-secondary:hover {
+        background: var(--border-color);
+    }
 }
 
 .btn-small {
@@ -251,8 +259,10 @@ body {
     margin-bottom: 0;
 }
 
-.panel-toggle:hover {
-    background: var(--bg-tertiary);
+@media (hover: hover) {
+    .panel-toggle:hover {
+        background: var(--bg-tertiary);
+    }
 }
 
 .panel-toggle .arrow {
@@ -447,8 +457,10 @@ body {
     transition: border-color 0.2s ease;
 }
 
-.section-card:hover {
-    border-color: var(--border-highlight);
+@media (hover: hover) {
+    .section-card:hover {
+        border-color: var(--border-highlight);
+    }
 }
 
 .section-header {
@@ -1318,9 +1330,11 @@ body {
     color: var(--bg-primary);
 }
 
-.toggle-pills .pill:hover:not(.active) {
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
+@media (hover: hover) {
+    .toggle-pills .pill:hover:not(.active) {
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+    }
 }
 
 .shift-settings {
@@ -1405,8 +1419,10 @@ body {
     transition: background 0.15s ease;
 }
 
-.export-menu button:hover {
-    background: var(--bg-tertiary);
+@media (hover: hover) {
+    .export-menu button:hover {
+        background: var(--bg-tertiary);
+    }
 }
 
 .export-menu button:not(:last-child) {
@@ -2135,9 +2151,9 @@ body {
     }
 
     .btn-small {
-        min-height: 36px;
-        padding: 0.45rem 0.85rem;
-        font-size: 0.85rem;
+        min-height: 44px;
+        padding: 0.55rem 0.95rem;
+        font-size: 0.9rem;
     }
 
     .mob-checkbox input[type="checkbox"],
@@ -2146,7 +2162,39 @@ body {
         height: 24px;
     }
 
-    .pill {
+    .toggle-pills .pill {
         min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .panel-toggle {
+        min-height: 48px;
+        padding: 0.85rem 1rem;
+        font-size: 0.95rem;
+    }
+
+    .export-menu button {
+        min-height: 44px;
+        padding: 0.8rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    /* Scope Exclusions pills — was 24px tall with 0.65rem font, unreadable in field */
+    .scope-pill {
+        min-height: 36px;
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 0.85rem;
+        font-size: 0.8rem;
+    }
+
+    /* Tap target for the SF→SY converter on tight phone layouts */
+    .converter-inline input {
+        min-height: 40px;
+        font-size: 0.95rem;
     }
 }

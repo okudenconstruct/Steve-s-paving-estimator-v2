@@ -5,11 +5,16 @@ const config: CapacitorConfig = {
   appName: 'Paving Calculator',
   webDir: 'www',
   server: {
-    androidScheme: 'https'
+    androidScheme: 'https',
+    // Lock the WebView to the bundled assets only — this app makes zero
+    // network calls and should refuse all external navigation.
+    allowNavigation: [],
   },
   plugins: {
     SplashScreen: {
-      launchShowDuration: 2000,
+      // 800ms is plenty for a static WebView (~200ms to first paint);
+      // 2000ms felt like the app was hung.
+      launchShowDuration: 800,
       launchAutoHide: true,
       backgroundColor: '#0a0f1a',
       showSpinner: false,
