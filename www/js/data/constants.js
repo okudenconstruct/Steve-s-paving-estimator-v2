@@ -19,7 +19,7 @@ export const CONSTANTS = {
     WORKDAY_MINUTES: 480,       // Minutes per 8-hour shift
 
     // Conversion factors
-    HMA_FACTOR: 0.0575,         // tons per SY-inch (derived: 145 lbs/ft³ × 9ft²/SY × 1in/12 ÷ 2000 lbs/ton)
+    HMA_FACTOR: 0.0575,         // tons per SY-inch — industry rule of thumb, equivalent to 115 lbs/SY-inch (Asphalt Institute baseline is 110-112 = 0.0550-0.0560; 0.0575 is conservative for tonnage ordering)
     RAP_FACTOR: 0.04875,        // tons per SY-inch (derived: 130 lbs/ft³ × 9ft²/SY × 1in/12 ÷ 2000 lbs/ton)
     CY_PER_SY_INCH: 1 / 324,   // CY = SY × inches ÷ 324 (derived: 9ft²/SY × 1in/12 ÷ 27ft³/CY)
     SF_PER_SY: 9                // Square feet per square yard
@@ -80,6 +80,6 @@ export const CONSTANT_SOURCES = {
     RAP_DENSITY:  { value: 130, unit: 'lbs/ft³', source: 'FHWA', note: 'Loose millings, varies 120-140' },
     TRUCK_CY:     { value: 16, unit: 'CY', source: 'Industry standard', note: 'Tri-axle dump, heaped' },
     TRUCK_TONS:   { value: 22, unit: 'tons', source: 'Industry standard', note: 'Tri-axle dump, legal gross weight' },
-    HMA_FACTOR:   { value: 0.0575, unit: 'tons/SY-in', source: 'Derived from HMA_DENSITY', note: '145×9/12/2000' },
+    HMA_FACTOR:   { value: 0.0575, unit: 'tons/SY-in', source: 'Industry rule of thumb', note: '≈ 115 lbs/SY-in (conservative). Asphalt Institute baseline is 110-112 lbs/SY-in (0.0550-0.0560)' },
     RAP_FACTOR:   { value: 0.04875, unit: 'tons/SY-in', source: 'Derived from RAP_DENSITY', note: '130×9/12/2000' }
 };

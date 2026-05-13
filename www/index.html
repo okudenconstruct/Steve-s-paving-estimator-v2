@@ -167,27 +167,27 @@
                         <h4>Crew & Equipment ($/hr)</h4>
                         <div class="rate-row">
                             <label>Excavation Crew</label>
-                            <input type="number" id="rateCrewExc" placeholder="0.00" step="0.01" value="203.65">
+                            <input type="number" id="rateCrewExc" placeholder="auto" step="0.01">
                         </div>
                         <div class="rate-row">
                             <label>Fine Grading Crew</label>
-                            <input type="number" id="rateCrewFG" placeholder="0.00" step="0.01" value="241.00">
+                            <input type="number" id="rateCrewFG" placeholder="auto" step="0.01">
                         </div>
                         <div class="rate-row">
                             <label>DGA Crew</label>
-                            <input type="number" id="rateCrewDGA" placeholder="0.00" step="0.01" value="241.00">
+                            <input type="number" id="rateCrewDGA" placeholder="auto" step="0.01">
                         </div>
                         <div class="rate-row">
                             <label>Milling Crew</label>
-                            <input type="number" id="rateCrewMill" placeholder="0.00" step="0.01" value="648.83">
+                            <input type="number" id="rateCrewMill" placeholder="auto" step="0.01">
                         </div>
                         <div class="rate-row">
                             <label>Base Paving Crew</label>
-                            <input type="number" id="rateCrewBase" placeholder="0.00" step="0.01" value="400.75">
+                            <input type="number" id="rateCrewBase" placeholder="auto" step="0.01">
                         </div>
                         <div class="rate-row">
                             <label>Surface Paving Crew</label>
-                            <input type="number" id="rateCrewSurf" placeholder="0.00" step="0.01" value="400.75">
+                            <input type="number" id="rateCrewSurf" placeholder="auto" step="0.01">
                         </div>
                     </div>
 
@@ -300,35 +300,10 @@
                     </div>
                     <div class="input-group">
                         <label>CY/day Rate</label>
-                        <select id="excavationRate" onchange="autoCalcCheck()">
-                            <option value="0">-- Select --</option>
-                            <option value="50">50</option>
-                            <option value="100">100</option>
-                            <option value="150">150</option>
-                            <option value="200">200</option>
-                            <option value="300">300</option>
-                            <option value="400">400</option>
-                            <option value="500">500</option>
-                            <option value="600">600</option>
-                            <option value="800">800</option>
-                            <option value="1000">1000</option>
-                            <option value="1300">1300</option>
-                            <option value="1500">1500</option>
-                            <option value="2000">2000</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label>Crew Size</label>
-                        <select id="excCrewSize" onchange="autoCalcCheck()">
-                            <option value="1">1 person</option>
-                            <option value="2">2 people</option>
-                            <option value="3" selected>3 people</option>
-                            <option value="4">4 people</option>
-                            <option value="5">5 people</option>
-                            <option value="6">6 people</option>
-                            <option value="8">8 people</option>
-                            <option value="10">10 people</option>
-                        </select>
+                        <input type="number" inputmode="numeric" id="excavationRate" placeholder="auto" min="0" step="10" list="excavationRateList" oninput="autoCalcCheck()">
+                        <datalist id="excavationRateList">
+                            <option value="50"><option value="100"><option value="150"><option value="200"><option value="300"><option value="400"><option value="500"><option value="600"><option value="800"><option value="1000"><option value="1300"><option value="1500"><option value="2000">
+                        </datalist>
                     </div>
                     <div class="mob-checkbox">
                         <input type="checkbox" id="excMob" checked onchange="autoCalcCheck()">
@@ -361,32 +336,10 @@
                     </div>
                     <div class="input-group">
                         <label>SY/day Rate</label>
-                        <select id="fineGradingRate" onchange="autoCalcCheck()">
-                            <option value="0">-- Select --</option>
-                            <option value="500">500</option>
-                            <option value="750">750</option>
-                            <option value="1000">1000</option>
-                            <option value="1500">1500</option>
-                            <option value="2000">2000</option>
-                            <option value="2500">2500</option>
-                            <option value="3000">3000</option>
-                            <option value="3500">3500</option>
-                            <option value="4000">4000</option>
-                            <option value="5000">5000</option>
-                            <option value="6000">6000</option>
-                            <option value="8000">8000</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label>Crew Size</label>
-                        <select id="fgCrewSize" onchange="autoCalcCheck()">
-                            <option value="1">1 person</option>
-                            <option value="2" selected>2 people</option>
-                            <option value="3">3 people</option>
-                            <option value="4">4 people</option>
-                            <option value="5">5 people</option>
-                            <option value="6">6 people</option>
-                        </select>
+                        <input type="number" inputmode="numeric" id="fineGradingRate" placeholder="auto" min="0" step="100" list="fineGradingRateList" oninput="autoCalcCheck()">
+                        <datalist id="fineGradingRateList">
+                            <option value="500"><option value="750"><option value="1000"><option value="1500"><option value="2000"><option value="2500"><option value="3000"><option value="3500"><option value="4000"><option value="5000"><option value="6000"><option value="8000">
+                        </datalist>
                     </div>
                     <div class="mob-checkbox">
                         <input type="checkbox" id="fgMob" checked onchange="autoCalcCheck()">
@@ -422,34 +375,10 @@
                     </div>
                     <div class="input-group">
                         <label>CY/day Rate</label>
-                        <select id="dgaRate" onchange="autoCalcCheck()">
-                            <option value="0">-- Select --</option>
-                            <option value="50">50</option>
-                            <option value="100">100</option>
-                            <option value="150">150</option>
-                            <option value="200">200</option>
-                            <option value="300">300</option>
-                            <option value="400">400</option>
-                            <option value="500">500</option>
-                            <option value="600">600</option>
-                            <option value="700">700</option>
-                            <option value="800">800</option>
-                            <option value="1000">1000</option>
-                            <option value="1200">1200</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label>Crew Size</label>
-                        <select id="dgaCrewSize" onchange="autoCalcCheck()">
-                            <option value="1">1 person</option>
-                            <option value="2">2 people</option>
-                            <option value="3" selected>3 people</option>
-                            <option value="4">4 people</option>
-                            <option value="5">5 people</option>
-                            <option value="6">6 people</option>
-                            <option value="8">8 people</option>
-                            <option value="10">10 people</option>
-                        </select>
+                        <input type="number" inputmode="numeric" id="dgaRate" placeholder="auto" min="0" step="10" list="dgaRateList" oninput="autoCalcCheck()">
+                        <datalist id="dgaRateList">
+                            <option value="50"><option value="100"><option value="150"><option value="200"><option value="300"><option value="400"><option value="500"><option value="600"><option value="700"><option value="800"><option value="1000"><option value="1200">
+                        </datalist>
                     </div>
                     <div class="mob-checkbox">
                         <input type="checkbox" id="dgaMob" checked onchange="autoCalcCheck()">
@@ -492,34 +421,10 @@
                     </div>
                     <div class="input-group">
                         <label>SY/day Rate</label>
-                        <select id="millingRate" onchange="autoCalcCheck()">
-                            <option value="0">-- Select --</option>
-                            <option value="500">500</option>
-                            <option value="1000">1000</option>
-                            <option value="1500">1500</option>
-                            <option value="2000">2000</option>
-                            <option value="3000">3000</option>
-                            <option value="4000">4000</option>
-                            <option value="5000">5000</option>
-                            <option value="6000">6000</option>
-                            <option value="8000">8000</option>
-                            <option value="10000">10000</option>
-                            <option value="14000">14000</option>
-                            <option value="18000">18000</option>
-                            <option value="25000">25000</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label>Crew Size</label>
-                        <select id="millCrewSize" onchange="autoCalcCheck()">
-                            <option value="2">2 people</option>
-                            <option value="3">3 people</option>
-                            <option value="4" selected>4 people</option>
-                            <option value="5">5 people</option>
-                            <option value="6">6 people</option>
-                            <option value="8">8 people</option>
-                            <option value="10">10 people</option>
-                        </select>
+                        <input type="number" inputmode="numeric" id="millingRate" placeholder="auto" min="0" step="100" list="millingRateList" oninput="autoCalcCheck()">
+                        <datalist id="millingRateList">
+                            <option value="500"><option value="1000"><option value="1500"><option value="2000"><option value="3000"><option value="4000"><option value="5000"><option value="6000"><option value="8000"><option value="10000"><option value="14000"><option value="18000"><option value="25000">
+                        </datalist>
                     </div>
                     <div class="mob-checkbox">
                         <input type="checkbox" id="millMob" checked onchange="autoCalcCheck()">
@@ -559,35 +464,10 @@
                     </div>
                     <div class="input-group">
                         <label>SY/day Rate</label>
-                        <select id="baseRate" onchange="autoCalcCheck()">
-                            <option value="0">-- Select --</option>
-                            <option value="500">500</option>
-                            <option value="750">750</option>
-                            <option value="1000">1000</option>
-                            <option value="1500">1500</option>
-                            <option value="2000">2000</option>
-                            <option value="2500">2500</option>
-                            <option value="3000">3000</option>
-                            <option value="3500">3500</option>
-                            <option value="4000">4000</option>
-                            <option value="4500">4500</option>
-                            <option value="5000">5000</option>
-                            <option value="6000">6000</option>
-                            <option value="8000">8000</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label>Crew Size</label>
-                        <select id="baseCrewSize" onchange="autoCalcCheck()">
-                            <option value="2">2 people</option>
-                            <option value="3">3 people</option>
-                            <option value="4">4 people</option>
-                            <option value="5">5 people</option>
-                            <option value="6" selected>6 people</option>
-                            <option value="8">8 people</option>
-                            <option value="10">10 people</option>
-                            <option value="12">12 people</option>
-                        </select>
+                        <input type="number" inputmode="numeric" id="baseRate" placeholder="auto" min="0" step="100" list="baseRateList" oninput="autoCalcCheck()">
+                        <datalist id="baseRateList">
+                            <option value="500"><option value="750"><option value="1000"><option value="1500"><option value="2000"><option value="2500"><option value="3000"><option value="3500"><option value="4000"><option value="4500"><option value="5000"><option value="6000"><option value="8000">
+                        </datalist>
                     </div>
                     <div class="mob-checkbox">
                         <input type="checkbox" id="baseMob" checked onchange="autoCalcCheck()">
@@ -629,34 +509,10 @@
                     </div>
                     <div class="input-group">
                         <label>SY/day Rate</label>
-                        <select id="surfaceRate" onchange="autoCalcCheck()">
-                            <option value="0">-- Select --</option>
-                            <option value="500">500</option>
-                            <option value="750">750</option>
-                            <option value="1000">1000</option>
-                            <option value="1500">1500</option>
-                            <option value="2000">2000</option>
-                            <option value="2500">2500</option>
-                            <option value="3000">3000</option>
-                            <option value="3500">3500</option>
-                            <option value="4000">4000</option>
-                            <option value="5000">5000</option>
-                            <option value="6000">6000</option>
-                            <option value="8000">8000</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label>Crew Size</label>
-                        <select id="surfCrewSize" onchange="autoCalcCheck()">
-                            <option value="2">2 people</option>
-                            <option value="3">3 people</option>
-                            <option value="4">4 people</option>
-                            <option value="5">5 people</option>
-                            <option value="6" selected>6 people</option>
-                            <option value="8">8 people</option>
-                            <option value="10">10 people</option>
-                            <option value="12">12 people</option>
-                        </select>
+                        <input type="number" inputmode="numeric" id="surfaceRate" placeholder="auto" min="0" step="100" list="surfaceRateList" oninput="autoCalcCheck()">
+                        <datalist id="surfaceRateList">
+                            <option value="500"><option value="750"><option value="1000"><option value="1500"><option value="2000"><option value="2500"><option value="3000"><option value="3500"><option value="4000"><option value="5000"><option value="6000"><option value="8000">
+                        </datalist>
                     </div>
                     <div class="mob-checkbox">
                         <input type="checkbox" id="surfMob" checked onchange="autoCalcCheck()">

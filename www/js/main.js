@@ -137,18 +137,18 @@ const ACTIVITY_INPUTS = {
 
 /**
  * Check and apply suggested rate for a given activity.
- * Only auto-suggests if the dropdown is still on "-- Select --" (value 0).
+ * Only auto-suggests if the rate input is empty (or 0).
  */
 function trySuggestRate(activityType) {
     const selectId = RATE_SELECT_MAP[activityType];
     const inputs = ACTIVITY_INPUTS[activityType];
     if (!selectId || !inputs) return;
 
-    const select = document.getElementById(selectId);
-    if (!select) return;
+    const el = document.getElementById(selectId);
+    if (!el) return;
 
-    // Only auto-suggest if user hasn't already chosen a rate
-    if (parseFloat(select.value) > 0) return;
+    // Only auto-suggest if user hasn't already typed/picked a rate
+    if (parseFloat(el.value) > 0) return;
 
     const area = getVal(inputs.area);
     const depth = inputs.depth ? getVal(inputs.depth) : 0;
@@ -165,11 +165,9 @@ function trySuggestRate(activityType) {
     const rate = suggestProductionRate(activityType, currentJobMode, quantity, depth);
     if (!rate) return;
 
-    const snapped = snapToDropdownOption(rate, selectId);
-    select.value = snapped;
-
-    // Add visual indicator that rate was auto-suggested
-    select.classList.add('suggested');
+    // Number inputs accept any value — no need to snap to a fixed bucket
+    el.value = rate;
+    el.classList.add('suggested');
 }
 
 /**
@@ -284,7 +282,6 @@ function buildEstimateFromUI() {
     const excDepth = getVal('excavationDepth');
     const excCycle = getVal('excavationCycle');
     const excRateVal = getVal('excavationRate');
-    const excCrewSize = getVal('excCrewSize');
 
     const excConfig = ACTIVITY_CONFIG.excavation;
     const excQuantityData = excConfig.quantityCalc(excArea, excDepth, 1.0, swellFactor);
@@ -296,7 +293,7 @@ function buildEstimateFromUI() {
         activityType: 'excavation',
         colorClass: excConfig.colorClass,
         quantity: new Quantity({ netQuantity: excQuantityData.netQuantity, uomId: 'CY', wasteFactor: 1.0, method: 'area×depth÷324', inputs: { area: excArea, depth: excDepth } }),
-        crew: selectCrew('excavation', rates.rateCrewExc, excCrewSize, 'C-EXC', 'Excavation Crew'),
+        crew: selectCrew('excavation', rates.rateCrewExc, DEFAULT_CREW_SIZES.excavation, 'C-EXC', 'Excavation Crew'),
         productionRate: excRateVal ? new ProductionRate({ id: 'PR-EXC', activityType: 'excavation', outputQty: excRateVal, outputUOMId: 'CY', source: 'User selected' }) : new ProductionRate({ id: 'PR-EXC', activityType: 'excavation', outputQty: 0, outputUOMId: 'CY' }),
         productivityFactor: productivity,
         mobilization: { included: isChecked('excMob'), cost: rates.mobExc },
@@ -314,7 +311,6 @@ function buildEstimateFromUI() {
     // --- Fine Grading ---
     const fgArea = getVal('fineGradingArea');
     const fgRateVal = getVal('fineGradingRate');
-    const fgCrewSize = getVal('fgCrewSize');
 
     const fgActivity = new Activity({
         id: 'FG-001',
@@ -323,7 +319,7 @@ function buildEstimateFromUI() {
         activityType: 'fine_grading',
         colorClass: 'purple',
         quantity: new Quantity({ netQuantity: fgArea, uomId: 'SY', wasteFactor: 1.0, method: 'direct area', inputs: { area: fgArea } }),
-        crew: selectCrew('fine_grading', rates.rateCrewFG, fgCrewSize, 'C-FG', 'Fine Grading Crew'),
+        crew: selectCrew('fine_grading', rates.rateCrewFG, DEFAULT_CREW_SIZES.fine_grading, 'C-FG', 'Fine Grading Crew'),
         productionRate: fgRateVal ? new ProductionRate({ id: 'PR-FG', activityType: 'fine_grading', outputQty: fgRateVal, outputUOMId: 'SY' }) : new ProductionRate({ id: 'PR-FG', activityType: 'fine_grading', outputQty: 0, outputUOMId: 'SY' }),
         productivityFactor: productivity,
         mobilization: { included: isChecked('fgMob'), cost: rates.mobFG },
@@ -336,7 +332,6 @@ function buildEstimateFromUI() {
     const dgaDepth = getVal('dgaDepth');
     const dgaCycle = getVal('dgaCycle');
     const dgaRateVal = getVal('dgaRate');
-    const dgaCrewSize = getVal('dgaCrewSize');
 
     const dgaQuantityData = ACTIVITY_CONFIG.dga_base.quantityCalc(dgaArea, dgaDepth, aggregateWaste);
 
@@ -347,7 +342,7 @@ function buildEstimateFromUI() {
         activityType: 'dga_base',
         colorClass: 'yellow',
         quantity: new Quantity({ netQuantity: dgaQuantityData.netQuantity, uomId: 'CY', wasteFactor: 1.0, method: 'area×depth÷324', inputs: { area: dgaArea, depth: dgaDepth } }),
-        crew: selectCrew('dga_base', rates.rateCrewDGA, dgaCrewSize, 'C-DGA', 'DGA Crew'),
+        crew: selectCrew('dga_base', rates.rateCrewDGA, DEFAULT_CREW_SIZES.dga_base, 'C-DGA', 'DGA Crew'),
         productionRate: dgaRateVal ? new ProductionRate({ id: 'PR-DGA', activityType: 'dga_base', outputQty: dgaRateVal, outputUOMId: 'CY' }) : new ProductionRate({ id: 'PR-DGA', activityType: 'dga_base', outputQty: 0, outputUOMId: 'CY' }),
         productivityFactor: productivity,
         materialResources: [{ resource: matDGA, quantityPerOutputUnit: CONSTANTS.DGA_DENSITY * aggregateWaste }],
@@ -363,7 +358,6 @@ function buildEstimateFromUI() {
     const millDepth = getVal('millingDepth');
     const millCycle = getVal('millingCycle');
     const millRateVal = getVal('millingRate');
-    const millCrewSize = getVal('millCrewSize');
 
     const millQuantityData = ACTIVITY_CONFIG.milling.quantityCalc(millArea, millDepth);
 
@@ -374,7 +368,7 @@ function buildEstimateFromUI() {
         activityType: 'milling',
         colorClass: 'pink',
         quantity: new Quantity({ netQuantity: millArea, uomId: 'SY', wasteFactor: 1.0, method: 'direct area', inputs: { area: millArea, depth: millDepth } }),
-        crew: selectCrew('milling', rates.rateCrewMill, millCrewSize, 'C-MILL', 'Milling Crew'),
+        crew: selectCrew('milling', rates.rateCrewMill, DEFAULT_CREW_SIZES.milling, 'C-MILL', 'Milling Crew'),
         productionRate: millRateVal ? new ProductionRate({ id: 'PR-MILL', activityType: 'milling', outputQty: millRateVal, outputUOMId: 'SY' }) : new ProductionRate({ id: 'PR-MILL', activityType: 'milling', outputQty: 0, outputUOMId: 'SY' }),
         productivityFactor: productivity,
         mobilization: { included: isChecked('millMob'), cost: rates.mobMill },
@@ -393,7 +387,6 @@ function buildEstimateFromUI() {
     const baseDepth = getVal('baseDepth');
     const baseCycle = getVal('baseCycle');
     const baseRateVal = getVal('baseRate');
-    const baseCrewSize = getVal('baseCrewSize');
 
     const baseQuantityData = ACTIVITY_CONFIG.paving_base.quantityCalc(baseArea, baseDepth, asphaltWaste);
 
@@ -404,7 +397,7 @@ function buildEstimateFromUI() {
         activityType: 'paving_base',
         colorClass: 'blue',
         quantity: new Quantity({ netQuantity: baseArea, uomId: 'SY', wasteFactor: 1.0, method: 'direct area (rate in SY/day)', inputs: { area: baseArea, depth: baseDepth } }),
-        crew: selectCrew('paving_base', rates.rateCrewBase, baseCrewSize, 'C-PAVE-B', 'Paving Crew (Base)'),
+        crew: selectCrew('paving_base', rates.rateCrewBase, DEFAULT_CREW_SIZES.paving_base, 'C-PAVE-B', 'Paving Crew (Base)'),
         productionRate: baseRateVal ? new ProductionRate({ id: 'PR-BASE', activityType: 'paving_base', outputQty: baseRateVal, outputUOMId: 'SY' }) : new ProductionRate({ id: 'PR-BASE', activityType: 'paving_base', outputQty: 0, outputUOMId: 'SY' }),
         productivityFactor: productivity,
         materialResources: [{ resource: mat19HMA, quantityPerOutputUnit: baseDepth * CONSTANTS.HMA_FACTOR * asphaltWaste }],
@@ -424,7 +417,6 @@ function buildEstimateFromUI() {
     const surfDepth = getVal('surfaceDepth');
     const surfCycle = getVal('surfaceCycle');
     const surfRateVal = getVal('surfaceRate');
-    const surfCrewSize = getVal('surfCrewSize');
 
     const surfQuantityData = ACTIVITY_CONFIG.paving_surface.quantityCalc(surfArea, surfDepth, asphaltWaste);
 
@@ -435,7 +427,7 @@ function buildEstimateFromUI() {
         activityType: 'paving_surface',
         colorClass: 'green',
         quantity: new Quantity({ netQuantity: surfArea, uomId: 'SY', wasteFactor: 1.0, method: 'direct area (rate in SY/day)', inputs: { area: surfArea, depth: surfDepth } }),
-        crew: selectCrew('paving_surface', rates.rateCrewSurf, surfCrewSize, 'C-PAVE-S', 'Paving Crew (Surface)'),
+        crew: selectCrew('paving_surface', rates.rateCrewSurf, DEFAULT_CREW_SIZES.paving_surface, 'C-PAVE-S', 'Paving Crew (Surface)'),
         productionRate: surfRateVal ? new ProductionRate({ id: 'PR-SURF', activityType: 'paving_surface', outputQty: surfRateVal, outputUOMId: 'SY' }) : new ProductionRate({ id: 'PR-SURF', activityType: 'paving_surface', outputQty: 0, outputUOMId: 'SY' }),
         productivityFactor: productivity,
         materialResources: [{ resource: mat95HMA, quantityPerOutputUnit: surfDepth * CONSTANTS.HMA_FACTOR * asphaltWaste }],
@@ -690,14 +682,78 @@ function calculateAll() {
     const truckingRate = getVal('rateTrucking');
     const results = calculateWithTruckingOverrides(est, truckingRate);
     Renderer.renderResults(results, est);
+    // Auto-save the working estimate (project takeoffs + settings) so the
+    // user doesn't lose work on app close. Restored in DOMContentLoaded.
+    autoSaveSession();
+}
+
+// ---- Session auto-save (Issue 3 quick win) ----
+// Snapshots every form input/select/textarea/checkbox/radio with an id, so
+// closing the app and reopening preserves takeoffs, notes, scope, indirects.
+// Rate library (saveRates button) is independent of this.
+
+const SESSION_KEY = 'pavingCalcSession';
+
+function snapshotSession() {
+    const data = {};
+    document.querySelectorAll('input[id], select[id], textarea[id]').forEach(el => {
+        if (el.readOnly || el.disabled) return;
+        if (el.type === 'checkbox') {
+            data[el.id] = el.checked;
+        } else if (el.type === 'radio') {
+            // Radios share a name; record the selected value once per group.
+            if (el.checked) data['__radio__' + el.name] = el.value;
+        } else {
+            data[el.id] = el.value;
+        }
+    });
+    data.__jobMode = currentJobMode;
+    return data;
+}
+
+function autoSaveSession() {
+    try {
+        localStorage.setItem(SESSION_KEY, JSON.stringify(snapshotSession()));
+    } catch (e) {
+        console.warn('Session auto-save failed:', e);
+    }
+}
+
+function restoreSession() {
+    try {
+        const raw = localStorage.getItem(SESSION_KEY);
+        if (!raw) return false;
+        const data = JSON.parse(raw);
+        for (const [key, val] of Object.entries(data)) {
+            if (key === '__jobMode') continue;
+            if (key.startsWith('__radio__')) {
+                const name = key.slice('__radio__'.length);
+                const radio = document.querySelector(`input[type="radio"][name="${name}"][value="${val}"]`);
+                if (radio) radio.checked = true;
+                continue;
+            }
+            const el = document.getElementById(key);
+            if (!el) continue;
+            if (el.type === 'checkbox') el.checked = !!val;
+            else el.value = val;
+        }
+        if (data.__jobMode) setJobMode(data.__jobMode);
+        return true;
+    } catch (e) {
+        console.warn('Session restore failed:', e);
+        return false;
+    }
 }
 
 // ---- UI Event Handlers ----
 
+let _autoCalcTimer = null;
 function autoCalcCheck() {
-    if (isChecked('autoCalc')) {
-        calculateAll();
-    }
+    if (!isChecked('autoCalc')) return;
+    // Debounce so the 11-phase pipeline doesn't run on every keystroke.
+    // 150ms is below the perception threshold for a single edit but coalesces fast typing.
+    clearTimeout(_autoCalcTimer);
+    _autoCalcTimer = setTimeout(calculateAll, 150);
 }
 
 function convertSfToSy() {
@@ -774,10 +830,19 @@ function resetForm() {
     document.getElementById('projectName').value = '';
     document.getElementById('tackArea').value = '';
 
+    // Production-rate inputs share the 'rate' substring with the rate-library inputs,
+    // so they're excluded by the regex above. Clear them explicitly.
+    for (const id of Object.values(RATE_SELECT_MAP)) {
+        const el = document.getElementById(id);
+        if (el) {
+            el.value = '';
+            el.classList.remove('suggested');
+        }
+    }
+
     document.querySelectorAll('select').forEach(select => {
         if (!select.id.includes('Modifier') && !select.id.includes('Waste') &&
-            !select.id.includes('Swell') && !select.id.includes('Efficiency') &&
-            !select.id.includes('CrewSize')) {
+            !select.id.includes('Swell') && !select.id.includes('Efficiency')) {
             select.selectedIndex = 0;
             select.classList.remove('suggested');
         }
@@ -840,10 +905,10 @@ function setJobMode(mode) {
 
     // Reset auto-suggested rates so they re-calculate for the new job mode
     for (const selectId of Object.values(RATE_SELECT_MAP)) {
-        const select = document.getElementById(selectId);
-        if (select && select.classList.contains('suggested')) {
-            select.value = '0';
-            select.classList.remove('suggested');
+        const el = document.getElementById(selectId);
+        if (el && el.classList.contains('suggested')) {
+            el.value = '';
+            el.classList.remove('suggested');
         }
     }
 
@@ -939,14 +1004,27 @@ document.addEventListener('DOMContentLoaded', function () {
         if (savedSettings.clusterMode != null) document.getElementById('clusterMode').checked = savedSettings.clusterMode;
     }
 
-    // Initialize scope grid
+    // Initialize scope grid (must run before session restore so radios exist)
     initScopeGrid();
 
-    // Wire rate dropdown manual-change handlers to clear "suggested" indicator
+    // Restore last-used session (project takeoffs, indirects, scope, notes).
+    // This overlays on top of rate-library and settings loaded above, since
+    // the session is the most-recent snapshot.
+    const restored = restoreSession();
+
+    // Wire rate input manual-change handlers to clear "suggested" indicator
     for (const selectId of Object.values(RATE_SELECT_MAP)) {
-        const select = document.getElementById(selectId);
-        if (select) {
-            select.addEventListener('change', () => onRateManualChange(selectId));
+        const el = document.getElementById(selectId);
+        if (el) {
+            el.addEventListener('input', () => onRateManualChange(selectId));
         }
+    }
+
+    // If we restored a session and at least one takeoff is populated, calculate
+    // so the rendered output reflects the restored state immediately.
+    if (restored) {
+        const anyArea = ['excavationArea', 'fineGradingArea', 'dgaArea', 'millingArea', 'baseArea', 'surfaceArea']
+            .some(id => getVal(id) > 0);
+        if (anyArea) calculateAll();
     }
 });

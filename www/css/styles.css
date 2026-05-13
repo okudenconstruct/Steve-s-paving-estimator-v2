@@ -518,7 +518,8 @@ body {
 }
 
 /* Auto-suggested rate indicator */
-.input-group select.suggested {
+.input-group select.suggested,
+.input-group input.suggested {
     border-color: var(--accent-cyan);
     box-shadow: 0 0 0 1px rgba(38, 198, 218, 0.2);
 }
@@ -2092,4 +2093,60 @@ body {
 
     .gantt-bar.critical { background: #333; }
     .gantt-bar.normal { background: #999; }
+}
+
+/* ============================================
+   Touch / Coarse Pointer (mobile, field use)
+   Bumps inputs to ≥44px tap target and labels
+   to readable size for sunlight + gloves use.
+   Desktop pointer (mouse) keeps the dense layout.
+   ============================================ */
+@media (pointer: coarse) {
+    .input-group input,
+    .input-group select,
+    .rate-row input,
+    .setting-group input,
+    .setting-group select,
+    .indirect-item .rate-row input,
+    .markup-row input {
+        min-height: 44px;
+        font-size: 1rem;
+        padding: 0.6rem 0.75rem;
+    }
+
+    .input-group label,
+    .rate-row label,
+    .setting-group label,
+    .indirect-item .rate-row label,
+    .checkbox-group label,
+    .mob-checkbox label {
+        font-size: 0.85rem;
+        margin-bottom: 0.35rem;
+    }
+
+    .input-group .hint {
+        font-size: 0.75rem;
+    }
+
+    .btn {
+        min-height: 44px;
+        padding: 0.65rem 1.1rem;
+        font-size: 0.95rem;
+    }
+
+    .btn-small {
+        min-height: 36px;
+        padding: 0.45rem 0.85rem;
+        font-size: 0.85rem;
+    }
+
+    .mob-checkbox input[type="checkbox"],
+    .checkbox-group input[type="checkbox"] {
+        width: 24px;
+        height: 24px;
+    }
+
+    .pill {
+        min-height: 44px;
+    }
 }

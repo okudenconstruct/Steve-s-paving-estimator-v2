@@ -50,7 +50,7 @@ export class IndirectCosts {
         contingency = {
             estimateClass: EstimateClass.CLASS_3,
             identifiedRisksTotal: 0,        // from Risk Register
-            unidentifiedAllowancePct: 0.10, // % of subtotal before contingency
+            unidentifiedAllowancePct: 10, // % of subtotal before contingency (integer percent, e.g. 10 = 10%)
             manualOverride: null            // if set, overrides calculated
         }
     } = {}) {
@@ -111,7 +111,7 @@ export class IndirectCosts {
 
         // Contingency
         const ct = this.contingency;
-        const unidentifiedAllowance = subtotalBeforeContingency * ct.unidentifiedAllowancePct;
+        const unidentifiedAllowance = subtotalBeforeContingency * (ct.unidentifiedAllowancePct / 100);
         const totalContingency = ct.manualOverride !== null ?
             ct.manualOverride :
             ct.identifiedRisksTotal + unidentifiedAllowance;

@@ -474,12 +474,12 @@ FINAL: TOTAL ESTIMATED COST = subtotalBeforeContingency + totalContingency
 
 ### Important Detail: What Flows Into "laborCost" for Indirect Calcs
 
-In `Calculator.js` line 179:
+In `Calculator.js` (Phase 6):
 ```javascript
-const laborCostForIndirect = totalLaborCost + totalEquipmentCost;
+const laborCostForIndirect = totalLaborCost;
 ```
 
-**Both labor AND equipment are summed together** and passed as "laborCost" to IndirectCosts. This means %-based GC items (smallToolsPct, safetyPpePct) and insurance items (glInsurancePct, wcRatePct) are calculated against the combined labor+equipment total. This is a consequence of the composite rate issue -- since equipmentCost is always $0, this currently doesn't cause incorrect math, but **it will need adjustment when the labor/equipment split is implemented**.
+**Labor only** is passed as "laborCost" to IndirectCosts. %-based GC items (smallToolsPct, safetyPpePct) and insurance items (glInsurancePct, wcRatePct) are calculated against labor cost only, not labor+equipment. This is the correct behavior once detailed crew compositions are in use.
 
 ---
 
@@ -571,11 +571,11 @@ Updates DOM elements by ID. Key display elements:
 - Unit metrics: costPerSY, costPerTon, materialsPct, laborPct
 - v4.0 panels: confidence badge/bars, unit check table, analysis cards, mob/safety table, calendar timeline, Gantt chart
 
-**Critical line 251:**
+**Labor line:**
 ```javascript
-sv('subtotalLabor', fc(results.totalLaborCost + results.totalEquipmentCost));
+sv('subtotalLabor', fc(results.totalLaborCost));
 ```
-This merges equipment into the "Labor" display line.
+Labor and equipment are now displayed as separate subtotal rows in the cost summary (`subtotalLabor` and `subtotalEquipment`).
 
 ### 9.3 ExportService (`ExportService.js`)
 
@@ -648,27 +648,21 @@ The SAFE crew ($130.39/hr, 1 person) needs validation. Typical traffic control f
 
 ## 11. Known Issues (Audit Items 1-7)
 
-### Issue 1: Labor vs Equipment Cost Split
-**Problem:** All crew costs report as 100% labor, 0% equipment because CREW_DATA only has composite rates.
-**Root cause:** `Crew.fromCrewData()` creates composite crews where `isDetailed = false`, so `laborCostPerHour` returns the full rate and `equipmentCostPerHour` returns 0.
-**Files affected:** `paving-defaults.js` (data), `Crew.js` (model), `main.js` (line 260-274 selectCrew), `Renderer.js` (line 251), `Calculator.js` (line 179).
-**Data needed:** Detailed crew compositions with individual labor and equipment rates.
-**Code changes needed:**
-1. Expand CREW_DATA to include `laborComponents` and `equipmentComponents` arrays
-2. Update `Crew.fromCrewData()` to populate component arrays (or create a new factory)
-3. Fix `Renderer.js` line 251 to display labor and equipment separately
-4. Fix `Calculator.js` line 179 to pass only labor cost (not labor+equipment) to IndirectCosts for %-based items
-5. Update `ExportService.js` to display correct split
+### Issue 1: Labor vs Equipment Cost Split (PARTIALLY RESOLVED)
+**Status:** Auto-selected crews now use detailed compositions via `Crew.fromDetailedData()` and the `CREW_COMPOSITIONS` data source (imported in `main.js`). `Renderer.js` and `Calculator.js` correctly separate labor and equipment in the waterfall.
+**Remaining gap:** The manual-rate path (`main.js` `selectCrew` → `Crew.fromComposite` when `manualRate > 0`) still produces composite crews with no equipment split. Previously this was masked by hard-coded `value="..."` defaults on the crew-rate inputs in `index.html`; those have now been removed so auto-select engages by default.
+**Files affected:** `paving-defaults.js` (data), `Crew.js` (model), `main.js` (`selectCrew`), `Renderer.js` (cost summary), `Calculator.js` (Phase 4 aggregation).
+**Code changes still needed:**
+1. When the user enters a manual rate, allow them to optionally split it into labor and equipment portions (or fall back to composite as today, but surface a UI hint that the equipment column will read $0).
+2. Update `ExportService.js` to display correct split.
 
 ### Issue 2: Dual Mobilization Calculation
 **Problem:** Activity-level mob (user lump sums) and cluster-level mob (formula: 2 * travel * rate) are calculated independently and displayed in different sections.
 **Files affected:** `Activity.js` (lines 137-140), `ClusterEngine.js` (lines 64-78), `Calculator.js` (lines 167-175, 241), `Renderer.js` (lines 261-265, 417-458).
 **Resolution needed:** Define which mobilization system to use, or consolidate them with clear priority logic. Currently, activity-level mob flows into Direct Cost and cluster mob is a separate display-only section.
 
-### Issue 3: Safety Cost Not in Waterfall
-**Problem:** Safety crew cost is calculated and displayed in the Mob & Safety panel but is NOT included in any cost summary line item. It's orphaned from the waterfall.
-**Files affected:** `ClusterEngine.js` (lines 81-93), `Calculator.js` (line 241).
-**Resolution needed:** Route `safetyCost` into a specific waterfall line. Options: add to Direct Cost, add to General Conditions, or create a new line in the summary.
+### Issue 3: Safety Cost Not in Waterfall (RESOLVED)
+**Status:** Safety crew cost (`safetyCostTotal`) now flows into `directCostTotal` (see `Calculator.js` Phase 5.1) and renders as a dedicated "Safety / Traffic Control" line in the cost summary (`Renderer.js` `_renderCostSummary` + `index.html` `#safetyCostRow`). The line auto-hides when zero (parking-lot mode).
 
 ### Issue 4: Fee/Profit Has No Bounds Check
 **Problem:** User can enter any markup percentage with no warning. Default is 15%.
